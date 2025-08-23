@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Create Memory Room</h2>
+<form method="post">
+  <input type="text" name="title" placeholder="Room title" required><br>
+  <textarea name="description" placeholder="Describe the room"></textarea><br>
+  <button type="submit">Create</button>
+</form>
+{% endblock %}

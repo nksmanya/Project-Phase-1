@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Community Feed</h2>
+{% for post in posts %}
+  <div class="post">
+    <p><b>{{ post.username }}</b>: {{ post.content }}</p>
+  </div>
+{% else %}
+  <p>No posts yet.</p>
+{% endfor %}
+{% endblock %}

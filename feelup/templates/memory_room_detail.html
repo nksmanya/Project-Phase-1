@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>{{ room['title'] }}</h2>
+<p>{{ room['description'] }}</p>
+
+<h3>Memories</h3>
+<ul>
+  {% for memory in memories %}
+    <li>{{ memory['content'] }} (by {{ memory['username'] }})</li>
+  {% else %}
+    <li>No memories yet.</li>
+  {% endfor %}
+</ul>
+
+<form method="post">
+  <textarea name="content" placeholder="Share a memory..." required></textarea><br>
+  <button type="submit">Add Memory</button>
+</form>
+{% endblock %}
