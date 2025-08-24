@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Messages</h2>
+<ul>
+{% for u in conversations %}
+    <li>
+        <a href="{{ url_for('chat', other_user_id=u.id) }}">{{ u.name or u.email }}</a>
+    </li>
+{% endfor %}
+</ul>
+{% endblock %}

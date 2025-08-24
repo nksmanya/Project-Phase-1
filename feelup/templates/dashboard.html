@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Welcome, {{ user.name }}</h2>
+
+<div class="dashboard-container">
+    <div class="main-feed">
+        <h3>Recent Moods</h3>
+        {% for mood in moods %}
+        <div class="card mood-post">
+            <div class="username">{{ mood.username }}</div>
+            <div class="content">{{ mood.content }}</div>
+            {% if mood.emotion %}
+                <span class="mood-tag mood-{{ mood.emotion|lower }}">{{ mood.emotion }}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <h3>Memory Suggestions</h3>
+        {% for mem in suggestions %}
+        <div class="card memory-post">
+            <div class="username">{{ mem.username }}</div>
+            <div class="title">{{ mem.title }}</div>
+            <div class="body">{{ mem.body }}</div>
+            {% if mem.tag %}
+                <span class="tag mood-{{ mem.tag|lower }}">{{ mem.tag }}</span>
+            {% endif %}
+        </div>
+        {% endfor %}
+
+        <h3>Upcoming Events</h3>
+        {% for ev in events %}
+        <div class="card event-post">
+            <div class="event-title">{{ ev.title }}</div>
+            <div class="event-desc">{{ ev.description }}</div>
+            <div class="event-info">{{ ev.location }} | {{ ev.datetime_str }} | Hosted by {{ ev.host_name }}</div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <div class="sidebar">
+        <h3>Other Users</h3>
+        <ul>
+        {% for u in users %}
+            {% if u.id != user.id %}
+            <li>
+                {{ u.name or u.email }}
+                {% if u in followed_users %}
+                    <form action="{{ url_for('unfollow_user', user_id=u.id) }}" method="POST" style="display:inline;">
+                        <button class="btn-unfollow" type="submit">Unfollow</button>
+                    </form>
+                {% else %}
+                    <form action="{{ url_for('follow_user', user_id=u.id) }}" method="POST" style="display:inline;">
+                        <button class="btn-follow" type="submit">Follow</button>
+                    </form>
+                {% endif %}
+                <a class="btn-message" href="{{ url_for('chat', other_user_id=u.id) }}">Message</a>
+            </li>
+            {% endif %}
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

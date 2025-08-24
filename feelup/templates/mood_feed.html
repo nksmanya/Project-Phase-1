@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Mood Feed</h2>
+<form method="POST" action="{{ url_for('mood_feed') }}" class="post-form">
+    <textarea name="content" placeholder="Share your mood..."></textarea>
+    <select name="emotion">
+        <option value="Happy">Happy</option>
+        <option value="Sad">Sad</option>
+        <option value="Angry">Angry</option>
+        <option value="Neutral">Neutral</option>
+    </select>
+    <label><input type="checkbox" name="anonymous"> Post Anonymously</label>
+    <button type="submit">Post</button>
+</form>
+
+<div class="feed">
+    {% for mood in moods %}
+    <div class="card mood-post">
+        <div class="username">{{ mood.username }}</div>
+        <div class="content">{{ mood.content }}</div>
+        {% if mood.emotion %}
+            <span class="mood-tag mood-{{ mood.emotion|lower }}">{{ mood.emotion }}</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

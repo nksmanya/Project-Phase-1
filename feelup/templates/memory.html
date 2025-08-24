@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Memories</h2>
+<form method="POST" action="{{ url_for('memory') }}" class="post-form">
+    <input type="text" name="title" placeholder="Title">
+    <textarea name="body" placeholder="Share your memory..."></textarea>
+    <input type="text" name="tag" placeholder="Tag (e.g., Work, Personal)">
+    <label><input type="checkbox" name="anonymous"> Post Anonymously</label>
+    <button type="submit">Post Memory</button>
+</form>
+
+<div class="feed">
+    {% for mem in memories %}
+    <div class="card memory-post">
+        <div class="username">{{ mem.username }}</div>
+        <div class="title">{{ mem.title }}</div>
+        <div class="body">{{ mem.body }}</div>
+        {% if mem.tag %}
+            <span class="tag mood-{{ mem.tag|lower }}">{{ mem.tag }}</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

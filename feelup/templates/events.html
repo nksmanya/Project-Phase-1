@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Events</h2>
+<a class="btn-create" href="{{ url_for('create_event') }}">Create Event</a>
+<div class="feed">
+    {% for ev in events %}
+    <div class="card event-post">
+        <div class="event-title">{{ ev.title }}</div>
+        <div class="event-desc">{{ ev.description }}</div>
+        <div class="event-info">{{ ev.location }} | {{ ev.datetime_str }} | Hosted by {{ ev.host_name }}</div>
+        <form method="POST" action="{{ url_for('join_event', event_id=ev.id) }}">
+            <button type="submit">Join Event</button>
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
