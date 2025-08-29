@@ -1,28 +1,193 @@
-body { font-family: Arial, sans-serif; margin:0; padding:0; background:#f5f5f5; }
-header { background:#333; color:#fff; padding:10px; display:flex; justify-content:space-between; align-items:center; }
-header a { color:#fff; text-decoration:none; margin-left:15px; }
-main { padding:20px; }
-.dashboard-container { display:flex; gap:20px; }
-.main-feed { flex:3; }
-.sidebar { flex:1; background:#fff; padding:10px; border-radius:10px; }
-.card { background:#fff; padding:15px; margin-bottom:15px; border-radius:10px; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
-.username { font-weight:bold; margin-bottom:5px; }
-.mood-tag, .tag { padding:3px 8px; border-radius:5px; color:#fff; font-size:0.8em; }
-.mood-happy { background:#28a745; }
-.mood-sad { background:#007bff; }
-.mood-angry { background:#dc3545; }
-.mood-neutral { background:#6c757d; }
-.mood-general { background:#6c757d; }
-.mood-work { background:#17a2b8; }
-.mood-personal { background:#ffc107; }
-.mood-fun { background:#ff69b4; }
-.feed { display:flex; flex-direction:column; gap:10px; }
-.post-form textarea, .post-form input, .post-form select { width:100%; margin-bottom:10px; padding:8px; }
-.post-form button { padding:8px 12px; background:#007bff; color:#fff; border:none; border-radius:5px; cursor:pointer; }
-.btn-follow { background:#007bff; color:#fff; border:none; padding:5px 8px; border-radius:5px; cursor:pointer; }
-.btn-unfollow { background:#dc3545; color:#fff; border:none; padding:5px 8px; border-radius:5px; cursor:pointer; }
-.btn-message { margin-left:5px; color:#17a2b8; text-decoration:none; }
-.chat-box { max-height:400px; overflow-y:auto; border:1px solid #ccc; padding:10px; border-radius:10px; margin-bottom:10px; background:#fff; }
-.chat-message { padding:5px; margin-bottom:5px; border-radius:5px; }
-.chat-message.sent { background:#007bff; color:#fff; align-self:flex-end; }
-.chat-message.received { background:#6c757d; color:#fff; align-self:flex-start; }
+/* ===============================
+   Global Styles
+================================= */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  padding: 0;
+  color: #2f3640;
+}
+
+h2 {
+  font-weight: 600;
+  margin-bottom: 20px;
+}
+
+/* ===============================
+   Navbar Modern Style
+================================= */
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 30px;
+  background: #273c75;
+  color: white;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.nav-left .brand {
+  font-size: 1.7em;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.nav-center {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-center .nav-item {
+  text-decoration: none;
+  color: white;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+.nav-center .nav-item:hover {
+  background: #192a56;
+}
+
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  position: relative;
+}
+
+.profile-dropdown {
+  cursor: pointer;
+  position: relative;
+}
+
+.profile-name::after {
+  content: "▼";
+  font-size: 0.6em;
+  margin-left: 5px;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 100%;
+  background: white;
+  color: #2f3640;
+  border-radius: 8px;
+  min-width: 150px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+  overflow: hidden;
+  z-index: 200;
+}
+
+.dropdown-menu a {
+  display: block;
+  padding: 10px 15px;
+  text-decoration: none;
+  color: #2f3640;
+  transition: 0.2s;
+}
+
+.dropdown-menu a:hover {
+  background: #f5f6fa;
+}
+
+.profile-dropdown:hover .dropdown-menu {
+  display: block;
+}
+
+.nav-right .logout {
+  color: #e84118 !important;
+}
+
+/* ===============================
+   Buttons & Cards
+================================= */
+.btn {
+  border-radius: 8px !important;
+  transition: 0.3s;
+}
+
+.btn:hover {
+  transform: scale(1.05);
+}
+
+.card {
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  transition: 0.3s;
+}
+
+.card:hover {
+  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+}
+
+/* ===============================
+   Mood Feed & Reactions
+================================= */
+#analyticsChart {
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.reaction-btn {
+  margin-right: 5px;
+}
+
+.comment-form input {
+  border-radius: 20px;
+  padding: 5px 15px;
+}
+
+.comment-form button {
+  border-radius: 20px;
+}
+
+/* ===============================
+   Memory List
+================================= */
+.list-group-item {
+  border-radius: 12px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+  transition: 0.3s;
+  background: white;
+}
+
+.list-group-item:hover {
+  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+}
+
+/* ===============================
+   Forms
+================================= */
+form textarea, form input, form select {
+  border-radius: 12px;
+  padding: 10px;
+  border: 1px solid #dcdde1;
+  transition: 0.3s;
+}
+
+form textarea:focus, form input:focus, form select:focus {
+  outline: none;
+  border-color: #273c75;
+  box-shadow: 0 0 5px rgba(39,60,117,0.3);
+}
+
+/* ===============================
+   Responsive
+================================= */
+@media (max-width: 768px) {
+  .nav-center {
+    display: none;
+  }
+}

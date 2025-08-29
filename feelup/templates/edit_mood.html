@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Edit Mood Post</h2>
+
+  <div class="card p-3">
+    <form method="POST">
+      <textarea name="content" class="form-control mb-2" required>{{ mood.content }}</textarea>
+      <select name="emotion" class="form-select mb-2">
+        <option value="positive" {% if mood.emotion=='positive' %}selected{% endif %}>Positive</option>
+        <option value="neutral" {% if mood.emotion=='neutral' %}selected{% endif %}>Neutral</option>
+        <option value="negative" {% if mood.emotion=='negative' %}selected{% endif %}>Negative</option>
+      </select>
+      <div class="d-flex justify-content-between">
+        <a href="{{ url_for('mood_feed') }}" class="btn btn-secondary">Cancel</a>
+        <button type="submit" class="btn btn-primary">Update Mood</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
