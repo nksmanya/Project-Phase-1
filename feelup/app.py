@@ -1,14 +1,25 @@
 # ===============================
-# app.py - SoulFrame Flask App
+# app.py - FeelUP Flask App (Updated with AI Mood Journal & Fixes)
 # ===============================
 
-from datetime import datetime
-from flask import Flask, render_template, request, redirect, url_for, flash, session
+from datetime import datetime, timedelta
+from flask import Flask, render_template, request, redirect, url_for, flash, session, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from flask import jsonify
+import os
+from datetime import datetime
+
+# NLP for AI Mood Journal
+from nltk.sentiment import SentimentIntensityAnalyzer
+import nltk
+try:
+    nltk.data.find('sentiment/vader_lexicon.zip')
+except LookupError:
+    nltk.download('vader_lexicon')
+sia = SentimentIntensityAnalyzer()
+
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'change-this-secret-in-production'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
@@ -67,9 +78,10 @@ class Event(db.Model):
     title = db.Column(db.String(200))
     description = db.Column(db.Text)
     location = db.Column(db.String(200))
-    datetime_str = db.Column(db.String(100))
+    datetime_event = db.Column(db.DateTime)  # <- updated column
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     joins = db.relationship('EventJoin', backref='event', cascade="all, delete-orphan")
+
 
 class EventJoin(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -77,7 +89,7 @@ class EventJoin(db.Model):
     name = db.Column(db.String(120))
     joined_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# ---- Follow System ----
+# Follow System
 class Follow(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     follower_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
@@ -91,6 +103,16 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     sender = db.relationship('User', foreign_keys=[sender_id])
     receiver = db.relationship('User', foreign_keys=[receiver_id])
+
+# AI Mood Journal
+class MoodJournal(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    date = db.Column(db.Date, default=datetime.utcnow().date())
+    emotion = db.Column(db.String(50))
+    text = db.Column(db.Text)
+    sentiment_score = db.Column(db.Float)  # -1 (negative) to +1 (positive)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # ===============================
 # Initialize Database
@@ -109,8 +131,7 @@ def current_user():
 
 def mood_stats():
     from collections import Counter
-    import datetime
-    one_week_ago = datetime.datetime.utcnow() - datetime.timedelta(days=7)
+    one_week_ago = datetime.utcnow() - timedelta(days=7)
     moods = MoodPost.query.filter(MoodPost.created_at >= one_week_ago).all()
     mood_list = [m.emotion for m in moods]
     stats = Counter(mood_list)
@@ -123,9 +144,20 @@ def memory_suggestions(user):
     suggestions = Memory.query.filter(Memory.tag.in_(my_tags), Memory.user_id != user.id).limit(5).all()
     return suggestions
 
+def analyze_mood(text):
+    scores = sia.polarity_scores(text)
+    compound = scores['compound']
+    if compound >= 0.05:
+        return "positive", compound
+    elif compound <= -0.05:
+        return "negative", compound
+    else:
+        return "neutral", compound
+
 # ===============================
 # Routes
 # ===============================
+
 @app.route('/')
 def index():
     if current_user():
@@ -166,14 +198,27 @@ def logout():
     flash('Logged out','info')
     return redirect(url_for('index'))
 
+# ----- Dashboard with Mood Analytics -----
 @app.route('/dashboard')
 def dashboard():
     user = current_user()
     if not user:
         return redirect(url_for('index'))
-    
+
     recent_moods = MoodPost.query.order_by(MoodPost.created_at.desc()).limit(5).all()
-    upcoming_events = Event.query.filter(Event.datetime_str >= datetime.utcnow().strftime("%Y-%m-%d %H:%M")).order_by(Event.created_at.desc()).limit(5).all()
+    
+    # -------------------------------
+    # Fix for upcoming events
+    # Convert Event.datetime_str to datetime for comparison
+    all_events = Event.query.all()
+    upcoming_events = [
+        ev for ev in all_events
+        if datetime.strptime(ev.datetime_str, "%Y-%m-%d %H:%M") >= datetime.utcnow()
+    ]
+    upcoming_events.sort(key=lambda e: datetime.strptime(e.datetime_str, "%Y-%m-%d %H:%M"))
+    upcoming_events = upcoming_events[:5]
+    # -------------------------------
+
     analytics = mood_stats()
     suggestions = memory_suggestions(user)
     
@@ -181,11 +226,22 @@ def dashboard():
     followed_ids = [f.followed_id for f in Follow.query.filter_by(follower_id=user.id).all()]
     followed_users = [User.query.get(uid) for uid in followed_ids]
 
-    return render_template('dashboard.html', user=user, moods=recent_moods, events=upcoming_events,
-                           analytics=analytics, suggestions=suggestions,
-                           users=users, followed_users=followed_users)
+    # Mood Journal Analytics
+    last_week = datetime.utcnow().date() - timedelta(days=6)
+    journal_entries = MoodJournal.query.filter(MoodJournal.user_id==user.id, MoodJournal.date >= last_week).all()
+    journal_dates = [e.date.strftime("%a") for e in journal_entries]
+    journal_scores = [e.sentiment_score for e in journal_entries]
 
-# ----- Mood Feed -----
+    return render_template(
+        'dashboard.html',
+        user=user, moods=recent_moods, events=upcoming_events,
+        analytics=analytics, suggestions=suggestions,
+        users=users, followed_users=followed_users,
+        journal_dates=journal_dates, journal_scores=journal_scores
+    )
+# ===============================
+# Mood Feed
+# ===============================
 @app.route('/mood', methods=['GET','POST'])
 def mood_feed():
     user = current_user()
@@ -213,7 +269,6 @@ def react_to_mood(post_id, emoji):
         mood.reactions = {}
     mood.reactions[emoji] = mood.reactions.get(emoji, 0) + 1
     db.session.commit()
-    # Return updated count
     return jsonify({"emoji": emoji, "count": mood.reactions[emoji]})
 
 @app.route('/mood/<int:post_id>/comment', methods=['POST'])
@@ -228,7 +283,9 @@ def comment_post(post_id):
     db.session.commit()
     return redirect(request.referrer or url_for('mood_feed'))
 
-# ----- Memory -----
+# ===============================
+# Memory
+# ===============================
 @app.route('/memory', methods=['GET','POST'])
 def memory():
     user = current_user()
@@ -251,11 +308,17 @@ def memory():
         memories = Memory.query.order_by(Memory.created_at.desc()).limit(50).all()
     return render_template('memory.html', memories=memories, user=user)
 
-# ----- Events -----
+# ===============================
+# Events
+# ===============================
 @app.route('/events')
 def events():
     user = current_user()
-    events = Event.query.order_by(Event.created_at.desc()).all()
+    if not user:
+        return redirect(url_for('index'))
+    
+    # Show events ordered by upcoming datetime
+    events = Event.query.order_by(Event.datetime_event.asc()).all()
     return render_template('events.html', user=user, events=events)
 
 @app.route('/events/create', methods=['GET','POST'])
@@ -265,26 +328,37 @@ def create_event():
         title = request.form.get('title')
         description = request.form.get('description')
         location = request.form.get('location')
-        datetime_str = request.form.get('datetime')
+        datetime_input = request.form.get('datetime')  # e.g. "2025-08-29 15:30"
         host_name = user.name if user else "Anonymous"
-        ev = Event(title=title, description=description, location=location, datetime_str=datetime_str, host_name=host_name)
+
+        dt_event = datetime.strptime(datetime_input, "%Y-%m-%d %H:%M")
+        ev = Event(title=title, description=description, location=location, datetime_event=dt_event, host_name=host_name)
         db.session.add(ev)
         db.session.commit()
         flash('Event created','success')
         return redirect(url_for('events'))
     return render_template('event_create.html', user=user)
-
 @app.route('/events/<int:event_id>/join', methods=['POST'])
 def join_event(event_id):
     user = current_user()
+    event = Event.query.get_or_404(event_id)
     name = user.name if user else request.form.get('name') or 'Guest'
-    join = EventJoin(event_id=event_id, name=name)
-    db.session.add(join)
-    db.session.commit()
-    flash('You joined the event','success')
+    
+    # Prevent joining same event multiple times
+    existing_join = EventJoin.query.filter_by(event_id=event.id, name=name).first()
+    if not existing_join:
+        join = EventJoin(event_id=event.id, name=name)
+        db.session.add(join)
+        db.session.commit()
+        flash('You joined the event', 'success')
+    else:
+        flash('You have already joined this event', 'info')
+    
     return redirect(url_for('events'))
 
-# ----- Follow System -----
+# ===============================
+# Follow System
+# ===============================
 @app.route('/follow/<int:user_id>', methods=['POST'])
 def follow_user(user_id):
     user = current_user()
@@ -307,7 +381,9 @@ def unfollow_user(user_id):
         db.session.commit()
     return redirect(request.referrer or url_for('dashboard'))
 
-# ----- Messaging -----
+# ===============================
+# Messaging
+# ===============================
 @app.route('/messages')
 def messages():
     user = current_user()
@@ -338,18 +414,131 @@ def chat(other_user_id):
     ).order_by(Message.created_at.asc()).all()
     return render_template('chat.html', user=user, other_user=other_user, messages=msgs)
 
+
 @app.route('/users')
 def users_list():
     user = current_user()
     if not user:
         return redirect(url_for('index'))
+    
     users = User.query.all()
     followed_ids = [f.followed_id for f in Follow.query.filter_by(follower_id=user.id).all()]
     followed_users = [User.query.get(uid) for uid in followed_ids]
-    return render_template('users.html', user=user, users=users, followed_users=followed_users)
+
+    # Pass list of followed IDs directly to template
+    return render_template('users.html', user=user, users=users, followed_ids=followed_ids)
+
+
+# ===============================
+# AI Mood Journal Routes
+# ===============================
+@app.route('/journal', methods=['GET', 'POST'])
+def journal():
+    user = current_user()
+    if not user:
+        return redirect(url_for('index'))
+
+    if request.method == 'POST':
+        text = request.form.get('text')
+        emotion = request.form.get('emotion')
+        if not text:
+            flash('Please write something about your mood.', 'warning')
+            return redirect(url_for('journal'))
+
+        detected_emotion, score = analyze_mood(text)
+        final_emotion = emotion if emotion else detected_emotion
+
+        entry = MoodJournal(user_id=user.id, text=text, emotion=final_emotion, sentiment_score=score)
+        db.session.add(entry)
+        db.session.commit()
+        flash('Mood journal entry saved!', 'success')
+        return redirect(url_for('journal_analytics'))
+
+    today_entry = MoodJournal.query.filter_by(user_id=user.id, date=datetime.utcnow().date()).first()
+    return render_template('journal.html', user=user, today_entry=today_entry)
+
+@app.route('/journal/analytics')
+def journal_analytics():
+    user = current_user()
+    if not user:
+        return redirect(url_for('index'))
+    last_30_days = datetime.utcnow().date() - timedelta(days=29)
+    entries = MoodJournal.query.filter(MoodJournal.user_id==user.id, MoodJournal.date>=last_30_days).order_by(MoodJournal.date.asc()).all()
+    dates = [e.date.strftime("%b %d") for e in entries]
+    scores = [e.sentiment_score for e in entries]
+    return render_template('journal_analytics.html', user=user, dates=dates, scores=scores)
+
+@app.route('/profile/<int:user_id>')
+def profile(user_id):
+    user = current_user()
+    other_user = User.query.get_or_404(user_id)
+    
+    # Optional: show user's moods, memories, etc.
+    moods = MoodPost.query.filter_by(user_id=other_user.id).order_by(MoodPost.created_at.desc()).all()
+    memories = Memory.query.filter_by(user_id=other_user.id).order_by(Memory.created_at.desc()).all()
+    
+    return render_template('profile.html', user=user, other_user=other_user, moods=moods, memories=memories)
+
+# Mood Edit/Delete
+@app.route('/mood/<int:post_id>/edit', methods=['GET','POST'])
+def edit_mood(post_id):
+    user = current_user()
+    mood = MoodPost.query.get_or_404(post_id)
+    if not user or mood.user_id != user.id:
+        flash('Not authorized', 'danger')
+        return redirect(url_for('mood_feed'))
+    if request.method=='POST':
+        mood.content = request.form.get('content')
+        mood.emotion = request.form.get('emotion')
+        db.session.commit()
+        flash('Mood updated', 'success')
+        return redirect(url_for('mood_feed'))
+    return render_template('edit_mood.html', mood=mood)
+
+@app.route('/mood/<int:post_id>/delete')
+def delete_mood(post_id):
+    user = current_user()
+    mood = MoodPost.query.get_or_404(post_id)
+    if not user or mood.user_id != user.id:
+        flash('Not authorized', 'danger')
+        return redirect(url_for('mood_feed'))
+    db.session.delete(mood)
+    db.session.commit()
+    flash('Mood deleted', 'success')
+    return redirect(url_for('mood_feed'))
+
+# Memory Edit/Delete
+@app.route('/memory/<int:memory_id>/edit', methods=['GET','POST'])
+def edit_memory(memory_id):
+    user = current_user()
+    mem = Memory.query.get_or_404(memory_id)
+    if not user or mem.user_id != user.id:
+        flash('Not authorized', 'danger')
+        return redirect(url_for('memory'))
+    if request.method=='POST':
+        mem.title = request.form.get('title')
+        mem.body = request.form.get('body')
+        mem.tag = request.form.get('tag')
+        db.session.commit()
+        flash('Memory updated', 'success')
+        return redirect(url_for('memory'))
+    return render_template('edit_memory.html', memory=mem)
+
+@app.route('/memory/<int:memory_id>/delete')
+def delete_memory(memory_id):
+    user = current_user()
+    mem = Memory.query.get_or_404(memory_id)
+    if not user or mem.user_id != user.id:
+        flash('Not authorized', 'danger')
+        return redirect(url_for('memory'))
+    db.session.delete(mem)
+    db.session.commit()
+    flash('Memory deleted', 'success')
+    return redirect(url_for('memory'))
+
 
 # ===============================
 # Run App
 # ===============================
 if __name__=='__main__':
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)  

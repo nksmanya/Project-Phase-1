@@ -1,11 +1,21 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% block title %}Messages - FeelUP{% endblock %}
+
 {% block content %}
-<h2>Messages</h2>
-<ul>
-{% for u in conversations %}
-    <li>
-        <a href="{{ url_for('chat', other_user_id=u.id) }}">{{ u.name or u.email }}</a>
-    </li>
-{% endfor %}
-</ul>
+<div class="container mt-4">
+  <h2>Messages</h2>
+  <div class="card p-3 shadow-sm">
+    <ul class="list-group list-group-flush">
+      {% for u in conversations %}
+      <li class="list-group-item d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <span class="rounded-circle" style="width:10px;height:10px;background:#a7f3d0;display:inline-block"></span>
+          <a href="{{ url_for('chat', other_user_id=u.id) }}">{{ u.name }}</a>
+        </div>
+        <a href="{{ url_for('chat', other_user_id=u.id) }}" class="btn btn-sm btn-outline-primary">Open</a>
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
 {% endblock %}

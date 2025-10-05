@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Create Event - FeelUP{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Create Event</h2>
+  <div class="card p-3 shadow-sm">
+    <form method="POST">
+      <input type="text" name="title" class="form-control mb-2" placeholder="Event Title" required>
+      <textarea name="description" class="form-control mb-2" rows="3" placeholder="Description" required></textarea>
+      <input type="text" name="location" class="form-control mb-2" placeholder="Location" required>
+      <input type="datetime-local" name="datetime" class="form-control mb-2" required>
+      <button type="submit" class="btn btn-success">Create Event</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

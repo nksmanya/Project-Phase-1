@@ -1,63 +1,111 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
 {% block content %}
-<h2>Welcome, {{ user.name }}</h2>
+<div class="container mt-4">
 
-<div class="dashboard-container">
-    <div class="main-feed">
-        <h3>Recent Moods</h3>
-        {% for mood in moods %}
-        <div class="card mood-post">
-            <div class="username">{{ mood.username }}</div>
-            <div class="content">{{ mood.content }}</div>
-            {% if mood.emotion %}
-                <span class="mood-tag mood-{{ mood.emotion|lower }}">{{ mood.emotion }}</span>
+  <h2>Welcome, {{ user.name }}</h2>
+
+  <!-- ==============================
+       Mood Feed Section
+       ============================== -->
+  <h3 class="mt-4">Recent Mood Posts</h3>
+  <div class="row">
+    {% for mood in moods %}
+    <div class="col-md-6 mb-3">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>{{ mood.username }}</strong>
+          <small>{{ mood.created_at.strftime('%b %d, %H:%M') }}</small>
+        </div>
+        <p>{{ mood.content }}</p>
+        <small class="text-muted">Emotion: {{ mood.emotion }}</small>
+        <div class="mt-2 d-flex justify-content-between align-items-center">
+          <div>
+            <!-- Like Button -->
+            <form method="POST" action="{{ url_for('react_to_mood', post_id=mood.id, emoji='👍') }}">
+              <button class="btn btn-sm btn-outline-primary">👍 {{ mood.reactions.get('👍',0) }}</button>
+            </form>
+            <form method="POST" action="{{ url_for('react_to_mood', post_id=mood.id, emoji='❤️') }}">
+              <button class="btn btn-sm btn-outline-danger">❤️ {{ mood.reactions.get('❤️',0) }}</button>
+            </form>
+          </div>
+          <div>
+            {% if mood.user_id == user.id %}
+            <a href="{{ url_for('edit_mood', post_id=mood.id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <form method="POST" action="{{ url_for('delete_mood', post_id=mood.id) }}" style="display:inline;">
+              <button class="btn btn-sm btn-danger">Delete</button>
+            </form>
             {% endif %}
+          </div>
         </div>
-        {% endfor %}
-
-        <h3>Memory Suggestions</h3>
-        {% for mem in suggestions %}
-        <div class="card memory-post">
-            <div class="username">{{ mem.username }}</div>
-            <div class="title">{{ mem.title }}</div>
-            <div class="body">{{ mem.body }}</div>
-            {% if mem.tag %}
-                <span class="tag mood-{{ mem.tag|lower }}">{{ mem.tag }}</span>
-            {% endif %}
-        </div>
-        {% endfor %}
-
-        <h3>Upcoming Events</h3>
-        {% for ev in events %}
-        <div class="card event-post">
-            <div class="event-title">{{ ev.title }}</div>
-            <div class="event-desc">{{ ev.description }}</div>
-            <div class="event-info">{{ ev.location }} | {{ ev.datetime_str }} | Hosted by {{ ev.host_name }}</div>
-        </div>
-        {% endfor %}
+      </div>
     </div>
+    {% endfor %}
+  </div>
 
-    <div class="sidebar">
-        <h3>Other Users</h3>
-        <ul>
-        {% for u in users %}
-            {% if u.id != user.id %}
-            <li>
-                {{ u.name or u.email }}
-                {% if u in followed_users %}
-                    <form action="{{ url_for('unfollow_user', user_id=u.id) }}" method="POST" style="display:inline;">
-                        <button class="btn-unfollow" type="submit">Unfollow</button>
-                    </form>
-                {% else %}
-                    <form action="{{ url_for('follow_user', user_id=u.id) }}" method="POST" style="display:inline;">
-                        <button class="btn-follow" type="submit">Follow</button>
-                    </form>
-                {% endif %}
-                <a class="btn-message" href="{{ url_for('chat', other_user_id=u.id) }}">Message</a>
-            </li>
-            {% endif %}
-        {% endfor %}
-        </ul>
+  <!-- ==============================
+       Memories Section
+       ============================== -->
+  <h3 class="mt-4">Recent Memories</h3>
+  <div class="row">
+    {% for mem in suggestions %}
+    <div class="col-md-6 mb-3">
+      <div class="card p-3 shadow-sm">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <strong>{{ mem.username }}</strong>
+          <small>{{ mem.created_at.strftime('%b %d, %H:%M') }}</small>
+        </div>
+        <h5>{{ mem.title }}</h5>
+        <p>{{ mem.body }}</p>
+        <small class="text-muted">Tag: {{ mem.tag }}</small>
+        <div class="mt-2">
+          {% if mem.user_id == user.id %}
+          <a href="{{ url_for('edit_memory_page', mem_id=mem.id) }}" class="btn btn-sm btn-warning">Edit</a>
+          <form method="POST" action="{{ url_for('delete_memory', mem_id=mem.id) }}" style="display:inline;">
+            <button class="btn btn-sm btn-danger">Delete</button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
     </div>
+    {% endfor %}
+  </div>
+
+  <!-- ==============================
+       Journal Analytics
+       ============================== -->
+  <h3 class="mt-4">Mood Journal (Last 7 Days)</h3>
+  {% if journal_scores %}
+  <canvas id="journalChart" height="150"></canvas>
+  {% else %}
+  <p>No journal entries yet. <a href="{{ url_for('journal') }}">Start journaling today</a>.</p>
+  {% endif %}
+
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if journal_scores %}
+var ctx = document.getElementById('journalChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ journal_dates|tojson }},
+        datasets: [{
+            label: 'Sentiment Score',
+            data: {{ journal_scores|tojson }},
+            borderColor: 'blue',
+            backgroundColor: 'rgba(0,123,255,0.2)',
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        scales: {
+            y: { min: -1, max: 1, title: { display: true, text: 'Sentiment (-1 to +1)' } }
+        }
+    }
+});
+{% endif %}
+</script>
 {% endblock %}
