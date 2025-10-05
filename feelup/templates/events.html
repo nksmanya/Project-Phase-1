@@ -1,17 +1,19 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+{% block title %}Events - FeelUP{% endblock %}
+
 {% block content %}
 <h2>Events</h2>
-<a class="btn-create" href="{{ url_for('create_event') }}">Create Event</a>
-<div class="feed">
-    {% for ev in events %}
-    <div class="card event-post">
-        <div class="event-title">{{ ev.title }}</div>
-        <div class="event-desc">{{ ev.description }}</div>
-        <div class="event-info">{{ ev.location }} | {{ ev.datetime_str }} | Hosted by {{ ev.host_name }}</div>
-        <form method="POST" action="{{ url_for('join_event', event_id=ev.id) }}">
-            <button type="submit">Join Event</button>
-        </form>
-    </div>
-    {% endfor %}
-</div>
+<a href="{{ url_for('create_event') }}" class="btn btn-primary mb-3">Create Event</a>
+
+<ul class="list-group">
+  {% for e in events %}
+  <li class="list-group-item">
+    <strong>{{ e.title }}</strong> by {{ e.host_name }} on {{ e.datetime_event }} <br>
+    {{ e.description }} <br>
+    <form method="POST" action="{{ url_for('join_event', event_id=e.id) }}">
+      <button class="btn btn-sm btn-success mt-1">Join Event</button>
+    </form>
+  </li>
+  {% endfor %}
+</ul>
 {% endblock %}

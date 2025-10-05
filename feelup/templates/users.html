@@ -1,23 +1,24 @@
-{% extends 'base.html' %}
+{% extends "base.html" %}
+
+{% block title %}Users{% endblock %}
+
 {% block content %}
-<h2>Users</h2>
-<ul>
-{% for u in users %}
-    {% if u.id != user.id %}
-    <li>
-        {{ u.name or u.email }}
-        {% if u in followed_users %}
-            <form action="{{ url_for('unfollow_user', user_id=u.id) }}" method="POST" style="display:inline;">
-                <button class="btn-unfollow">Unfollow</button>
-            </form>
-        {% else %}
-            <form action="{{ url_for('follow_user', user_id=u.id) }}" method="POST" style="display:inline;">
-                <button class="btn-follow">Follow</button>
-            </form>
-        {% endif %}
-        <a class="btn-message" href="{{ url_for('chat', other_user_id=u.id) }}">Message</a>
-    </li>
+<h2>All Users</h2>
+
+<ul class="list-group">
+  {% for u in users %}
+  <li class="list-group-item d-flex justify-content-between align-items-center">
+    {{ u.name }}
+    {% if u.id not in followed_ids %}
+      <form method="POST" action="{{ url_for('follow_user', user_id=u.id) }}">
+        <button class="btn btn-sm btn-primary">Follow</button>
+      </form>
+    {% else %}
+      <form method="POST" action="{{ url_for('unfollow_user', user_id=u.id) }}">
+        <button class="btn btn-sm btn-danger">Unfollow</button>
+      </form>
     {% endif %}
-{% endfor %}
+  </li>
+  {% endfor %}
 </ul>
 {% endblock %}

@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+  <h2>Mood Journal Analytics (Last 30 Days)</h2>
+
+  {% if scores %}
+  <div class="card p-3 shadow-sm">
+    <canvas id="analyticsChart" height="200"></canvas>
+  </div>
+  <a href="{{ url_for('dashboard') }}" class="btn btn-link mt-2">Back to Dashboard</a>
+  {% else %}
+  <p>No journal entries yet. <a href="{{ url_for('journal') }}">Start journaling today</a>.</p>
+  {% endif %}
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+{% if scores %}
+var ctx = document.getElementById('analyticsChart').getContext('2d');
+new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ dates|tojson }},
+        datasets: [{
+            label: 'Sentiment Score',
+            data: {{ scores|tojson }},
+            borderColor: 'green',
+            backgroundColor: 'rgba(0,200,0,0.2)',
+            fill: true,
+            tension: 0.3
+        }]
+    },
+    options: {
+        scales: {
+            y: { min: -1, max: 1, title: { display: true, text: 'Sentiment (-1 to +1)' } }
+        }
+    }
+});
+{% endif %}
+</script>
+{% endblock %}
