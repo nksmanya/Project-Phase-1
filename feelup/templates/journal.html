@@ -2,22 +2,28 @@
 {% block title %}Mood Journal - FeelUP{% endblock %}
 
 {% block content %}
-<h2>Mood Journal</h2>
-{% if today_entry %}
-<div class="alert alert-info">
-  <strong>Today's Entry:</strong> {{ today_entry.text }} (<em>{{ today_entry.emotion }}</em>)
-</div>
-{% endif %}
+<div class="container mt-4">
+  <h2>Mood Journal</h2>
+  {% if today_entry %}
+  <div class="alert alert-info">
+    <strong>Today's Entry:</strong> {{ today_entry.text }} (<em>{{ today_entry.emotion }}</em>)
+  </div>
+  {% endif %}
 
-<form method="POST" class="mt-3">
-  <textarea name="text" class="form-control mb-2" rows="4" placeholder="Write your mood today..." required></textarea>
-  <select name="emotion" class="form-select mb-2">
-    <option value="">Auto-detect</option>
-    <option value="positive">Positive</option>
-    <option value="neutral">Neutral</option>
-    <option value="negative">Negative</option>
-  </select>
-  <button type="submit" class="btn btn-success">Save Entry</button>
-  <a href="{{ url_for('journal_analytics') }}" class="btn btn-link">View Analytics</a>
-</form>
+  <div class="card p-3 shadow-sm">
+    <form method="POST" class="mt-1">
+      <textarea name="text" class="form-control mb-2" rows="4" placeholder="Write your mood today..." required></textarea>
+      <select name="emotion" class="form-select mb-2">
+        <option value="">Auto-detect</option>
+        <option value="positive">Positive</option>
+        <option value="neutral">Neutral</option>
+        <option value="negative">Negative</option>
+      </select>
+      <div class="d-flex gap-2 align-items-center">
+        <button type="submit" class="btn btn-success">Save Entry</button>
+        <a href="{{ url_for('journal_analytics') }}" class="btn btn-link">View Analytics</a>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
