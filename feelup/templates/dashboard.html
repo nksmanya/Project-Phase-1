@@ -6,8 +6,8 @@
   <h2>Welcome, {{ user.name }}</h2>
 
   <!-- ==============================
-       Mood Feed Section
-       ============================== -->
+Mood Feed Section
+============================== -->
   <h3 class="mt-4">Recent Mood Posts</h3>
   <div class="row">
     {% for mood in moods %}
@@ -44,8 +44,8 @@
   </div>
 
   <!-- ==============================
-       Memories Section
-       ============================== -->
+Memories Section
+============================== -->
   <h3 class="mt-4">Recent Memories</h3>
   <div class="row">
     {% for mem in suggestions %}
@@ -72,8 +72,8 @@
   </div>
 
   <!-- ==============================
-       Journal Analytics
-       ============================== -->
+    Journal Analytics
+    ============================== -->
   <h3 class="mt-4">Mood Journal (Last 7 Days)</h3>
   {% if journal_scores %}
   <canvas id="journalChart" height="150"></canvas>
@@ -90,7 +90,7 @@ var ctx = document.getElementById('journalChart').getContext('2d');
 new Chart(ctx, {
     type: 'line',
     data: {
-        labels: {{ journal_dates|tojson }},
+        labels: {{ journal_dates|tojson }},  
         datasets: [{
             label: 'Sentiment Score',
             data: {{ journal_scores|tojson }},
