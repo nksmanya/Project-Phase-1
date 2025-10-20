@@ -1,89 +1,139 @@
 {% extends "base.html" %}
-
+{% block title %}Dashboard - FeelUP{% endblock %}
 {% block content %}
 <div class="container mt-4">
 
-  <h2>Welcome, {{ user.name }}</h2>
+  <div class="mb-5 text-center">
+    <h2 style="font-size: 2.5rem; margin-bottom: 10px;">
+      <i class="fas fa-home gradient-text"></i> Welcome back, {{ user.name }}! 
+    </h2>
+    <p class="text-muted" style="font-size: 1.1rem;">Let's check in on your wellness journey 🌟</p>
+  </div>
 
-  <!-- ==============================
-Mood Feed Section
-============================== -->
-  <h3 class="mt-4">Recent Mood Posts</h3>
+  <!-- Stats Cards Row -->
+  <div class="row mb-4">
+    <div class="col-md-3 mb-3">
+      <div class="card text-center p-3 shadow-hover" style="border-top: 4px solid #667eea;">
+        <i class="fas fa-heart" style="font-size: 2.5rem; color: #667eea; margin-bottom: 10px;"></i>
+        <h3 class="mb-0">{{ moods|length }}</h3>
+        <small class="text-muted">Recent Moods</small>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-center p-3 shadow-hover" style="border-top: 4px solid #10b981;">
+        <i class="fas fa-book-open" style="font-size: 2.5rem; color: #10b981; margin-bottom: 10px;"></i>
+        <h3 class="mb-0">{{ suggestions|length }}</h3>
+        <small class="text-muted">Memory Suggestions</small>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-center p-3 shadow-hover" style="border-top: 4px solid #f59e0b;">
+        <i class="fas fa-calendar-check" style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 10px;"></i>
+        <h3 class="mb-0">{{ events|length }}</h3>
+        <small class="text-muted">Upcoming Events</small>
+      </div>
+    </div>
+    <div class="col-md-3 mb-3">
+      <div class="card text-center p-3 shadow-hover" style="border-top: 4px solid #ef4444;">
+        <i class="fas fa-users" style="font-size: 2.5rem; color: #ef4444; margin-bottom: 10px;"></i>
+        <h3 class="mb-0">{{ followed_users|length }}</h3>
+        <small class="text-muted">Following</small>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================== Mood Feed Section ============================== -->
+  <h3 class="mt-5 mb-4">
+    <i class="fas fa-heartbeat" style="color: #667eea;"></i> Recent Mood Posts
+  </h3>
   <div class="row">
     {% for mood in moods %}
-    <div class="col-md-6 mb-3">
-      <div class="card p-3 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <strong>{{ mood.username }}</strong>
-          <small>{{ mood.created_at.strftime('%b %d, %H:%M') }}</small>
+    <div class="col-md-6 mb-4">
+      <div class="card p-4 shadow-hover mood-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <strong><i class="fas fa-user-circle"></i> {{ mood.username }}</strong>
+          <small class="text-muted"><i class="far fa-clock"></i> {{ mood.created_at.strftime('%b %d, %H:%M') }}</small>
         </div>
-        <p>{{ mood.content }}</p>
-        <small class="text-muted">Emotion: {{ mood.emotion }}</small>
-        <div class="mt-2 d-flex justify-content-between align-items-center">
-          <div>
-            <!-- Like Button -->
-            <form method="POST" action="{{ url_for('react_to_mood', post_id=mood.id, emoji='👍') }}">
-              <button class="btn btn-sm btn-outline-primary">👍 {{ mood.reactions.get('👍',0) }}</button>
-            </form>
-            <form method="POST" action="{{ url_for('react_to_mood', post_id=mood.id, emoji='❤️') }}">
-              <button class="btn btn-sm btn-outline-danger">❤️ {{ mood.reactions.get('❤️',0) }}</button>
-            </form>
-          </div>
-          <div>
-            {% if mood.user_id == user.id %}
-            <a href="{{ url_for('edit_mood', post_id=mood.id) }}" class="btn btn-sm btn-warning">Edit</a>
-            <form method="POST" action="{{ url_for('delete_mood', post_id=mood.id) }}" style="display:inline;">
-              <button class="btn btn-sm btn-danger">Delete</button>
-            </form>
-            {% endif %}
-          </div>
+        <p style="font-size: 1.05rem;">{{ mood.content }}</p>
+        
+        {% if mood.emotion == 'positive' %}
+          <span class="emotion-badge emotion-positive"><i class="fas fa-smile-beam"></i> {{ mood.emotion }}</span>
+        {% elif mood.emotion == 'negative' %}
+          <span class="emotion-badge emotion-negative"><i class="fas fa-sad-tear"></i> {{ mood.emotion }}</span>
+        {% else %}
+          <span class="emotion-badge emotion-neutral"><i class="fas fa-meh"></i> {{ mood.emotion }}</span>
+        {% endif %}
+        
+        <div class="mt-3">
+          <a href="{{ url_for('mood_feed') }}" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-eye"></i> View More
+          </a>
         </div>
       </div>
     </div>
     {% endfor %}
   </div>
+  
+  {% if not moods %}
+  <div class="text-center py-4 card">
+    <i class="fas fa-heart" style="font-size: 3rem; color: #d1d5db;"></i>
+    <p class="text-muted mt-3">No recent moods to display</p>
+    <a href="{{ url_for('mood_feed') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Share Your First Mood
+    </a>
+  </div>
+  {% endif %}
 
-  <!-- ==============================
-Memories Section
-============================== -->
-  <h3 class="mt-4">Recent Memories</h3>
+  <!-- ============================== Memories Section ============================== -->
+  <h3 class="mt-5 mb-4">
+    <i class="fas fa-lightbulb" style="color: #10b981;"></i> Memory Suggestions
+  </h3>
   <div class="row">
     {% for mem in suggestions %}
-    <div class="col-md-6 mb-3">
-      <div class="card p-3 shadow-sm">
+    <div class="col-md-6 mb-4">
+      <div class="card p-4 shadow-hover memory-card">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <strong>{{ mem.username }}</strong>
-          <small>{{ mem.created_at.strftime('%b %d, %H:%M') }}</small>
+          <strong><i class="fas fa-user-circle"></i> {{ mem.username }}</strong>
+          <span class="badge badge-success">{{ mem.tag }}</span>
         </div>
-        <h5>{{ mem.title }}</h5>
-        <p>{{ mem.body }}</p>
-        <small class="text-muted">Tag: {{ mem.tag }}</small>
-        <div class="mt-2">
-          {% if mem.user_id == user.id %}
-          <a href="{{ url_for('edit_memory_page', mem_id=mem.id) }}" class="btn btn-sm btn-warning">Edit</a>
-          <form method="POST" action="{{ url_for('delete_memory', mem_id=mem.id) }}" style="display:inline;">
-            <button class="btn btn-sm btn-danger">Delete</button>
-          </form>
-          {% endif %}
-        </div>
+        <h5 style="color: #1f2937; font-weight: 600;"><i class="fas fa-bookmark"></i> {{ mem.title }}</h5>
+        <p class="text-muted">{{ mem.body[:100] }}{% if mem.body|length > 100 %}...{% endif %}</p>
+        <small class="text-muted"><i class="far fa-clock"></i> {{ mem.created_at.strftime('%b %d, %H:%M') }}</small>
       </div>
     </div>
     {% endfor %}
   </div>
+  
+  {% if not suggestions %}
+  <div class="text-center py-4 card">
+    <i class="fas fa-book-open" style="font-size: 3rem; color: #d1d5db;"></i>
+    <p class="text-muted mt-3">No memory suggestions available</p>
+    <a href="{{ url_for('memory') }}" class="btn btn-success">
+      <i class="fas fa-plus"></i> Create a Memory
+    </a>
+  </div>
+  {% endif %}
 
-  <!-- ==============================
-    Journal Analytics
-    ============================== -->
-  <h3 class="mt-4">Mood Journal (Last 7 Days)</h3>
+  <!-- ============================== Journal Analytics ============================== -->
+  <h3 class="mt-5 mb-4">
+    <i class="fas fa-chart-line" style="color: #667eea;"></i> Your Mood Journal (Last 7 Days)
+  </h3>
   {% if journal_scores %}
-  <canvas id="journalChart" height="150"></canvas>
+  <div class="card p-4 shadow-hover">
+    <canvas id="journalChart" height="100"></canvas>
+  </div>
   {% else %}
-  <p>No journal entries yet. <a href="{{ url_for('journal') }}">Start journaling today</a>.</p>
+  <div class="text-center py-5 card">
+    <i class="fas fa-pen-fancy" style="font-size: 3rem; color: #d1d5db;"></i>
+    <p class="text-muted mt-3">No journal entries yet</p>
+    <a href="{{ url_for('journal') }}" class="btn btn-primary">
+      <i class="fas fa-plus"></i> Start Journaling Today
+    </a>
+  </div>
   {% endif %}
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 {% if journal_scores %}
 var ctx = document.getElementById('journalChart').getContext('2d');
@@ -94,15 +144,45 @@ new Chart(ctx, {
         datasets: [{
             label: 'Sentiment Score',
             data: {{ journal_scores|tojson }},
-            borderColor: 'blue',
-            backgroundColor: 'rgba(0,123,255,0.2)',
+            borderColor: '#667eea',
+            backgroundColor: 'rgba(102, 126, 234, 0.1)',
             fill: true,
-            tension: 0.3
+            tension: 0.4,
+            borderWidth: 3,
+            pointBackgroundColor: '#667eea',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            pointRadius: 6,
+            pointHoverRadius: 8
         }]
     },
     options: {
+        responsive: true,
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    font: { size: 14, weight: 'bold' },
+                    color: '#1f2937'
+                }
+            },
+            tooltip: {
+                backgroundColor: 'rgba(31, 41, 55, 0.9)',
+                padding: 12,
+                titleFont: { size: 14, weight: 'bold' },
+                bodyFont: { size: 13 }
+            }
+        },
         scales: {
-            y: { min: -1, max: 1, title: { display: true, text: 'Sentiment (-1 to +1)' } }
+            y: { 
+                min: -1, 
+                max: 1, 
+                title: { display: true, text: 'Sentiment (-1 to +1)', font: { size: 13, weight: 'bold' } },
+                grid: { color: '#f3f4f6' }
+            },
+            x: {
+                grid: { color: '#f3f4f6' }
+            }
         }
     }
 });
