@@ -3,27 +3,84 @@
 
 {% block content %}
 <div class="container mt-4">
-  <h2>Mood Journal</h2>
+  <div class="text-center mb-5">
+    <h2><i class="fas fa-pen-fancy gradient-text"></i> Mood Journal</h2>
+    <p class="text-muted">Track your emotional journey with AI-powered sentiment analysis</p>
+  </div>
+  
   {% if today_entry %}
-  <div class="alert alert-info">
-    <strong>Today's Entry:</strong> {{ today_entry.text }} (<em>{{ today_entry.emotion }}</em>)
+  <div class="alert alert-info mb-4">
+    <div class="d-flex align-items-center">
+      <i class="fas fa-check-circle" style="font-size: 2rem; margin-right: 15px;"></i>
+      <div>
+        <strong>Today's Entry Saved!</strong><br>
+        <em>"{{ today_entry.text[:100] }}{% if today_entry.text|length > 100 %}...{% endif %}"</em>
+        <span class="emotion-badge emotion-{{ today_entry.emotion }} ms-2">{{ today_entry.emotion }}</span>
+      </div>
+    </div>
   </div>
   {% endif %}
 
-  <div class="card p-3 shadow-sm">
-    <form method="POST" class="mt-1">
-      <textarea name="text" class="form-control mb-2" rows="4" placeholder="Write your mood today..." required></textarea>
-      <select name="emotion" class="form-select mb-2">
-        <option value="">Auto-detect</option>
-        <option value="positive">Positive</option>
-        <option value="neutral">Neutral</option>
-        <option value="negative">Negative</option>
-      </select>
-      <div class="d-flex gap-2 align-items-center">
-        <button type="submit" class="btn btn-success">Save Entry</button>
-        <a href="{{ url_for('journal_analytics') }}" class="btn btn-link">View Analytics</a>
+  <div class="card p-4 shadow-hover" style="border-left: 5px solid #667eea;">
+    <h5 class="mb-4"><i class="fas fa-edit"></i> How are you feeling today?</h5>
+    <form method="POST">
+      <div class="mb-4">
+        <label class="form-label"><i class="fas fa-heart"></i> Your Thoughts</label>
+        <textarea name="text" class="form-control" rows="6" 
+          placeholder="Express yourself freely... The AI will analyze your sentiment and help track your emotional patterns over time. 💭" 
+          required></textarea>
+        <small class="text-muted mt-1 d-block">
+          <i class="fas fa-robot"></i> Our AI will automatically detect your mood sentiment
+        </small>
+      </div>
+      
+      <div class="mb-4">
+        <label class="form-label"><i class="fas fa-smile"></i> Manual Emotion (Optional)</label>
+        <select name="emotion" class="form-select">
+          <option value="">🤖 Let AI Detect</option>
+          <option value="positive">😊 Positive</option>
+          <option value="neutral">😐 Neutral</option>
+          <option value="negative">😔 Negative</option>
+        </select>
+      </div>
+      
+      <div class="d-flex gap-3 align-items-center">
+        <button type="submit" class="btn btn-success">
+          <i class="fas fa-save"></i> Save Entry
+        </button>
+        <a href="{{ url_for('journal_analytics') }}" class="btn btn-outline-primary">
+          <i class="fas fa-chart-line"></i> View Analytics
+        </a>
+        <small class="text-muted ms-auto">
+          <i class="fas fa-lock"></i> Your journal is private
+        </small>
       </div>
     </form>
+  </div>
+
+  <!-- Tips Section -->
+  <div class="row mt-5">
+    <div class="col-md-4 mb-3">
+      <div class="card p-3 text-center shadow-hover" style="border-top: 4px solid #10b981;">
+        <i class="fas fa-lightbulb" style="font-size: 2.5rem; color: #10b981; margin-bottom: 10px;"></i>
+        <h5>Be Honest</h5>
+        <p class="text-muted small">Express your true feelings without judgment</p>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card p-3 text-center shadow-hover" style="border-top: 4px solid #667eea;">
+        <i class="fas fa-calendar-check" style="font-size: 2.5rem; color: #667eea; margin-bottom: 10px;"></i>
+        <h5>Daily Habit</h5>
+        <p class="text-muted small">Journal regularly to track your patterns</p>
+      </div>
+    </div>
+    <div class="col-md-4 mb-3">
+      <div class="card p-3 text-center shadow-hover" style="border-top: 4px solid #f59e0b;">
+        <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 10px;"></i>
+        <h5>Track Progress</h5>
+        <p class="text-muted small">Review your analytics to see improvements</p>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

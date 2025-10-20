@@ -1,22 +1,178 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container mt-4">
-  <h2>Edit Mood Post</h2>
+<style>
+    body {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+    }
 
-  <div class="card p-3">
-    <form method="POST">
-      <textarea name="content" class="form-control mb-2" required>{{ mood.content }}</textarea>
-      <select name="emotion" class="form-select mb-2">
-        <option value="positive" {% if mood.emotion=='positive' %}selected{% endif %}>Positive</option>
-        <option value="neutral" {% if mood.emotion=='neutral' %}selected{% endif %}>Neutral</option>
-        <option value="negative" {% if mood.emotion=='negative' %}selected{% endif %}>Negative</option>
-      </select>
-      <div class="d-flex justify-content-between">
-        <a href="{{ url_for('mood_feed') }}" class="btn btn-secondary">Cancel</a>
-        <button type="submit" class="btn btn-primary">Update Mood</button>
-      </div>
-    </form>
-  </div>
+    /* Animated Background */
+    .bg-animation {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: 0;
+        pointer-events: none;
+    }
+
+    .floating-bubble {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.1);
+        animation: float 20s infinite ease-in-out;
+    }
+
+    .bubble-1 { width: 80px; height: 80px; left: 10%; animation-delay: 0s; }
+    .bubble-2 { width: 120px; height: 120px; left: 70%; animation-delay: 5s; }
+    .bubble-3 { width: 60px; height: 60px; left: 40%; animation-delay: 2s; }
+    .bubble-4 { width: 100px; height: 100px; right: 10%; animation-delay: 7s; }
+
+    @keyframes float {
+        0%, 100% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
+        10%, 90% { opacity: 0.4; }
+        100% { transform: translateY(-100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Card container */
+    .mood-container {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(20px);
+        border-radius: 24px;
+        padding: 48px;
+        width: 100%;
+        max-width: 640px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        position: relative;
+        z-index: 1;
+        animation: slideUp 0.6s ease-out;
+        margin: 40px auto;
+    }
+
+    @keyframes slideUp {
+        from { opacity: 0; transform: translateY(30px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .mood-title {
+        color: #1a1a2e;
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 8px;
+        text-align: center;
+    }
+
+    .subtitle {
+        color: #6c757d;
+        text-align: center;
+        margin-bottom: 32px;
+        font-size: 14px;
+    }
+
+    textarea.form-control {
+        border-radius: 16px !important;
+        padding: 16px;
+        font-size: 16px;
+        border: 2px solid #e5e7eb !important;
+        background: #f9fafb !important;
+        transition: all 0.3s ease;
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    textarea.form-control:focus {
+        border-color: #667eea !important;
+        background: #fff !important;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+        outline: none;
+    }
+
+    select.form-select {
+        border-radius: 12px !important;
+        border: 2px solid #e5e7eb !important;
+        padding: 12px;
+        background: #f9fafb !important;
+        transition: all 0.3s ease;
+    }
+
+    select.form-select:focus {
+        border-color: #667eea !important;
+        background: #fff !important;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
+        outline: none;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .btn-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .btn-secondary {
+        border-radius: 12px !important;
+        padding: 12px 24px !important;
+        font-weight: 500;
+    }
+
+    .btn-group {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 20px;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+        .mood-container {
+            padding: 32px 24px;
+        }
+
+        .mood-title {
+            font-size: 28px;
+        }
+    }
+</style>
+
+<!-- Animated Background -->
+<div class="bg-animation">
+    <div class="floating-bubble bubble-1"></div>
+    <div class="floating-bubble bubble-2"></div>
+    <div class="floating-bubble bubble-3"></div>
+    <div class="floating-bubble bubble-4"></div>
+</div>
+
+<!-- Mood Edit Container -->
+<div class="container mt-4 d-flex justify-content-center">
+    <div class="mood-container">
+        <h2 class="mood-title">Edit Your Mood</h2>
+        <p class="subtitle">Update your thoughts and emotions 🌱</p>
+
+        <form method="POST">
+            <textarea name="content" class="form-control mb-3" required>{{ mood.content }}</textarea>
+
+            <select name="emotion" class="form-select mb-3">
+                <option value="positive" {% if mood.emotion=='positive' %}selected{% endif %}>😊 Positive</option>
+                <option value="neutral" {% if mood.emotion=='neutral' %}selected{% endif %}>😐 Neutral</option>
+                <option value="negative" {% if mood.emotion=='negative' %}selected{% endif %}>😔 Negative</option>
+            </select>
+
+            <div class="btn-group">
+                <a href="{{ url_for('mood_feed') }}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-primary">Update Mood</button>
+            </div>
+        </form>
+    </div>
 </div>
 {% endblock %}
