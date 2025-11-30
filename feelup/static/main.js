@@ -161,22 +161,6 @@ document.querySelectorAll('.card').forEach(card => {
 });
 
 // ===============================
-// Add Loading State to Buttons
-// ===============================
-document.querySelectorAll('button[type="submit"]').forEach(button => {
-    button.addEventListener('click', function() {
-        const form = this.closest('form');
-        if (form && form.checkValidity()) {
-            this.disabled = true;
-            this.innerHTML = '<span class="loading"></span> Loading...';
-            setTimeout(() => {
-                this.disabled = false;
-            }, 3000);
-        }
-    });
-});
-
-// ===============================
 // Scroll to Top Button
 // ===============================
 const scrollTopBtn = document.createElement('button');

@@ -7,36 +7,36 @@
     <span class="badge badge-primary"><i class="fas fa-users"></i> {{ moods|length }} Posts</span>
   </div>
 
-  <!-- Post Form -->
-  <div class="card p-4 mb-4 shadow-hover" style="border-left: 5px solid #667eea;">
-    <h5 class="mb-3"><i class="fas fa-plus-circle"></i> Share Your Mood</h5>
-    <form method="POST">
-      <div class="mb-3">
-        <textarea name="content" class="form-control" rows="4" placeholder="How are you feeling today? 💭" required></textarea>
-      </div>
-      <div class="row mb-3">
-        <div class="col-md-6">
-          <label class="form-label"><i class="fas fa-smile"></i> Emotion</label>
-          <select name="emotion" class="form-select">
-            <option value="">🤖 Auto-detect</option>
-            <option value="positive">😊 Positive</option>
-            <option value="neutral">😐 Neutral</option>
-            <option value="negative">😔 Negative</option>
-          </select>
-        </div>
-        <div class="col-md-6 d-flex align-items-end">
-          <div class="form-check">
-            <input type="checkbox" class="form-check-input" name="anonymous" id="anonCheck">
-            <label class="form-check-label" for="anonCheck">
-              <i class="fas fa-user-secret"></i> Post Anonymously
-            </label>
+  <!-- Post Composer -->
+  <div class="card p-4 mb-4 shadow-hover" style="border-left: 5px solid #667eea;" id="new-post">
+    <div class="composer">
+      <div class="avatar">{{ user.name[0]|upper if user else 'U' }}</div>
+      <div class="composer-body">
+        <form method="POST">
+          <textarea name="content" placeholder="Share how you feel today... 💬" required></textarea>
+          <div class="composer-actions">
+            <div class="d-flex gap-2 align-items-center">
+              <select name="emotion" class="form-select form-select-sm" style="width:160px;">
+                <option value="">🤖 Auto-detect</option>
+                <option value="positive">😊 Positive</option>
+                <option value="neutral">😐 Neutral</option>
+                <option value="negative">😔 Negative</option>
+              </select>
+              <div class="form-check ms-2">
+                <input type="checkbox" class="form-check-input" name="anonymous" id="anonCheck">
+                <label class="form-check-label" for="anonCheck">Anonymous</label>
+              </div>
+            </div>
+
+            <div class="ms-auto d-flex gap-2">
+              <button type="button" class="quick-action" title="Add image"><i class="fas fa-image"></i></button>
+              <button type="button" class="quick-action" title="Add mood sticker"><i class="fas fa-smile"></i></button>
+              <button class="btn btn-primary" type="submit"><i class="fas fa-paper-plane"></i> Share</button>
+            </div>
           </div>
-        </div>
+        </form>
       </div>
-      <button class="btn btn-primary" type="submit">
-        <i class="fas fa-paper-plane"></i> Share Mood
-      </button>
-    </form>
+    </div>
   </div>
 
   <!-- Mood Posts -->

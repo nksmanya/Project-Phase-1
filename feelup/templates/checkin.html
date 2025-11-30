@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Daily Check-In - FeelUP{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Daily Check-In</h2>
+  <p class="text-muted">Quickly record how you're feeling. This helps the AI Mood Coach personalize recommendations.</p>
+
+  <div class="card p-3 mb-4 shadow-hover">
+    <form method="POST">
+      <div class="mb-3">
+        <label class="form-label">Select Mood (emoji or word)</label>
+        <input type="text" name="mood" class="form-control" placeholder="e.g. 😊 / stressed / calm" required>
+      </div>
+      <div class="mb-3">
+        <label class="form-label">Notes (optional)</label>
+        <textarea name="note" class="form-control" rows="4" placeholder="Any context or thoughts...">{% if last %}{{ last.note }}{% endif %}</textarea>
+      </div>
+      <div class="d-flex justify-content-end">
+        <button class="btn btn-outline-secondary me-2" type="button" onclick="location.href='{{ url_for('dashboard') }}'">Cancel</button>
+        <button class="btn btn-primary" type="submit">Save Check-In</button>
+      </div>
+    </form>
+  </div>
+
+  {% if last %}
+  <div class="card p-3 shadow-hover">
+    <h5>Last Check-In (today)</h5>
+    <p class="mb-1"><strong>{{ last.mood }}</strong> — <small class="text-muted">{{ last.created_at.strftime('%b %d, %H:%M') }}</small></p>
+    {% if last.note %}
+    <p class="text-muted">{{ last.note }}</p>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,19 +1,28 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <h2>Memories</h2>
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Memories</h2>
+    <a href="#new-memory" class="btn btn-sm btn-primary">New Memory</a>
+  </div>
 
-  <!-- Memory Form -->
-  <div class="card p-3 mb-4 shadow-sm">
-    <form method="POST">
-      <input type="text" name="title" class="form-control mb-2" placeholder="Memory Title" required>
-      <textarea name="body" class="form-control mb-2" placeholder="Share your memory..." required></textarea>
-      <input type="text" name="tag" class="form-control mb-2" placeholder="Tag (optional)">
-      <div class="form-check mb-2">
-        <input type="checkbox" class="form-check-input" name="anonymous" id="anonCheckMem">
-        <label class="form-check-label" for="anonCheckMem">Share Anonymously</label>
+  <!-- Memory Form (compact) -->
+  <div class="card p-3 mb-4 shadow-hover" id="new-memory">
+    <form method="POST" class="d-flex flex-column gap-2">
+      <div class="d-flex gap-2">
+        <input type="text" name="title" class="form-control" placeholder="Memory Title" required>
+        <input type="text" name="tag" class="form-control" placeholder="Tag (optional)">
       </div>
-      <button class="btn btn-primary">Share Memory</button>
+      <textarea name="body" class="form-control" placeholder="Share a memory..." required rows="4"></textarea>
+      <div class="d-flex justify-content-between align-items-center">
+        <div>
+          <div class="form-check">
+            <input type="checkbox" class="form-check-input" name="anonymous" id="anonCheckMem">
+            <label class="form-check-label" for="anonCheckMem">Share Anonymously</label>
+          </div>
+        </div>
+        <button class="btn btn-primary">Share Memory</button>
+      </div>
     </form>
   </div>
 
@@ -21,20 +30,22 @@
   <div class="row">
     {% for mem in memories %}
     <div class="col-md-6 mb-3">
-      <div class="card p-3 shadow-sm">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-          <strong>{{ mem.username }}</strong>
-          <small>{{ mem.created_at.strftime('%b %d, %H:%M') }}</small>
+      <div class="card p-3 shadow-hover memory-card">
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <div>
+            <strong>{{ mem.username }}</strong>
+            <div class="text-muted" style="font-size:0.9rem">{{ mem.created_at.strftime('%b %d, %H:%M') }}</div>
+          </div>
+          <div class="text-end">
+            <span class="badge bg-light text-muted">{{ mem.tag }}</span>
+          </div>
         </div>
-        <h5>{{ mem.title }}</h5>
-        <p>{{ mem.body }}</p>
-        <small class="text-muted">Tag: {{ mem.tag }}</small>
-        <div class="mt-2">
+        <h5 style="margin-top:6px">{{ mem.title }}</h5>
+        <p class="text-muted">{{ mem.body }}</p>
+        <div class="d-flex justify-content-end gap-2">
           {% if mem.user_id == user.id %}
-          <a href="{{ url_for('edit_memory_page', mem_id=mem.id) }}" class="btn btn-sm btn-warning">Edit</a>
-          <form method="POST" action="{{ url_for('delete_memory', mem_id=mem.id) }}" style="display:inline;">
-            <button class="btn btn-sm btn-danger">Delete</button>
-          </form>
+          <a href="{{ url_for('edit_memory', memory_id=mem.id) }}" class="btn btn-sm btn-outline-warning">Edit</a>
+          <a href="{{ url_for('delete_memory', memory_id=mem.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this memory?')">Delete</a>
           {% endif %}
         </div>
       </div>

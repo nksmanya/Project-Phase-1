@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block title %}AI Mood Coach - FeelUP{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>AI Mood Coach</h2>
+    <div class="text-end">
+      <div class="small text-muted">Streak: <strong>{{ streak }}</strong> days</div>
+      {% if last_note %}
+      <div class="small text-muted">Last note: {{ last_note.created_at.strftime('%b %d') }}</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card p-3 mb-3 shadow-hover">
+    <h5>Companion Response</h5>
+    <p class="mb-0">{{ recs.message }}</p>
+  </div>
+
+  <div class="card p-3 mb-3 shadow-hover">
+    <h5>Daily Goal</h5>
+    <p class="mb-0">{{ recs.daily_goal }}</p>
+  </div>
+
+  <div class="card p-3 mb-3 shadow-hover">
+    <h5>Recommendations</h5>
+    <ul>
+      {% for s in recs.suggestions %}
+      <li>{{ s }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('checkin') }}" class="btn btn-primary">New Check-In</a>
+    <a href="{{ url_for('journal') }}" class="btn btn-outline-primary">Open Journal</a>
+  </div>
+</div>
+{% endblock %}

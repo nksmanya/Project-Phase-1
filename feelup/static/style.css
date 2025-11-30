@@ -399,6 +399,50 @@ h3 {
   100% { transform: scale(1); }
 }
 
+/* ===============================
+  Search / Navbar extras
+  ============================== */
+.search-form { display: flex; gap: 8px; align-items: center; }
+.search-input {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  width: 420px;
+  background: rgba(255,255,255,0.9);
+  box-shadow: 0 6px 20px rgba(2,6,23,0.08);
+}
+.btn-icon { background: rgba(255,255,255,0.06); border: none; color: #e5e7eb; padding: 8px 10px; border-radius: 10px; }
+.btn-icon .badge { position: absolute; }
+.notif-badge { background: #ef4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 20px; margin-left: -8px; }
+
+/* ===============================
+  Avatar & Composer
+  ============================== */
+.avatar { width: 48px; height: 48px; border-radius: 50%; background: #e5e7eb; display: inline-flex; align-items: center; justify-content: center; color: #374151; font-weight: 700; }
+.composer { display: flex; gap: 12px; align-items: flex-start; }
+.composer .composer-body { flex: 1; }
+.composer textarea { width: 100%; border-radius: 12px; padding: 12px 14px; border: 1px solid #e6e7eb; min-height: 80px; resize: vertical; }
+.composer .composer-actions { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.composer .quick-action { padding: 8px 12px; border-radius: 999px; border: 1px solid #e6e7eb; background: white; cursor: pointer; }
+
+/* ===============================
+  Sidebar placeholder for resources
+  ============================== */
+.sidebar { position: sticky; top: 88px; }
+.resource-card { border-radius: 14px; padding: 16px; background: linear-gradient(180deg, #ffffff, #fbfbff); box-shadow: 0 8px 30px rgba(2,6,23,0.06); }
+
+/* Accessibility focus
+  Ensure focus outlines are visible for keyboard users */
+a:focus, button:focus, input:focus, textarea:focus { outline: 3px solid rgba(102,126,234,0.18); outline-offset: 2px; }
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .search-input { width: 160px; }
+  .search-form { display: none; }
+  .brand-text { display: none; }
+}
+
+
 #analyticsChart {
   background: white;
   padding: 30px;

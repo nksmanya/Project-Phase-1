@@ -8,6 +8,7 @@ from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from datetime import datetime
+from sqlalchemy import func
 
 # NLP for AI Mood Journal
 from nltk.sentiment import SentimentIntensityAnalyzer
@@ -114,6 +115,28 @@ class MoodJournal(db.Model):
     sentiment_score = db.Column(db.Float)  # -1 (negative) to +1 (positive)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+# New: store individual mood check-ins (multiple per day allowed)
+class MoodEntry(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    mood = db.Column(db.String(50))        # emoji or label
+    score = db.Column(db.Float)            # optional numeric score (-1..1)
+    note = db.Column(db.Text)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
+
+# New: Journal notes separate from MoodJournal (free-form private notes)
+class JournalNote(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    title = db.Column(db.String(200))
+    body = db.Column(db.Text)
+    tags = db.Column(db.String(200))
+    pinned = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 # ===============================
 # Initialize Database
 # ===============================
@@ -153,6 +176,68 @@ def analyze_mood(text):
         return "negative", compound
     else:
         return "neutral", compound
+
+
+def compute_streak(user_id):
+    # Compute consecutive-day streak ending today based on MoodEntry dates
+    from sqlalchemy import func
+    dates = db.session.query(func.date(MoodEntry.created_at)).filter(MoodEntry.user_id==user_id).distinct().order_by(MoodEntry.created_at.desc()).all()
+    dates = [d[0] for d in dates]
+    if not dates:
+        return 0
+    streak = 0
+    today = datetime.utcnow().date()
+    current = today
+    for d in dates:
+        # SQL returns strings for sqlite, ensure date
+        try:
+            entry_date = d if isinstance(d, datetime) else datetime.strptime(str(d), '%Y-%m-%d').date()
+        except Exception:
+            entry_date = d
+        if entry_date == current:
+            streak += 1
+            current = current - timedelta(days=1)
+        elif entry_date < current:
+            break
+    return streak
+
+
+def ai_recommendations(user, recent_entries):
+    # Simple rule-based recommendations using recent sentiment
+    if not user:
+        return { 'message': 'Login to get personalized recommendations.' }
+    if not recent_entries:
+        return {
+            'message': 'No recent entries found. Try a quick check-in to get started.',
+            'suggestions': ['Take a 5-minute breathing break', 'Write one positive thing that happened today']
+        }
+    pos = sum(1 for e in recent_entries if (e.score or 0) > 0.05)
+    neg = sum(1 for e in recent_entries if (e.score or 0) < -0.05)
+    neutral = len(recent_entries) - pos - neg
+
+    suggestions = []
+    if neg > pos:
+        suggestions = [
+            'Take a 10-minute walk in nature',
+            'Try a grounding exercise: 5 senses check',
+            'Write down 3 things you are grateful for'
+        ]
+        tone = 'It seems you had more challenging moments recently. That is okay — small steps help.'
+    elif pos >= neg:
+        suggestions = [
+            'Keep up the momentum — try a small creative task',
+            'Share a positive moment in your journal',
+            'Try a short gratitude list before bed'
+        ]
+        tone = 'Nice work — you have several positive check-ins. Keep nurturing these moments.'
+
+    goal = 'Try to check in at least once a day this week.'
+
+    return {
+        'message': tone,
+        'suggestions': suggestions,
+        'daily_goal': goal
+    }
 
 # ===============================
 # Routes
@@ -206,38 +291,86 @@ def dashboard():
         return redirect(url_for('index'))
 
     recent_moods = MoodPost.query.order_by(MoodPost.created_at.desc()).limit(5).all()
-    
+
     # -------------------------------
-    # Fix for upcoming events
-    # Convert Event.datetime_str to datetime for comparison
-    all_events = Event.query.all()
-    upcoming_events = [
-        ev for ev in all_events
-        if datetime.strptime(ev.datetime_str, "%Y-%m-%d %H:%M") >= datetime.utcnow()
-    ]
-    upcoming_events.sort(key=lambda e: datetime.strptime(e.datetime_str, "%Y-%m-%d %H:%M"))
+    # Upcoming events: use Event.datetime_event (DateTime column)
+    all_events = Event.query.filter(Event.datetime_event != None).order_by(Event.datetime_event.asc()).all()
+    upcoming_events = [ev for ev in all_events if ev.datetime_event >= datetime.utcnow()]
     upcoming_events = upcoming_events[:5]
     # -------------------------------
 
     analytics = mood_stats()
     suggestions = memory_suggestions(user)
-    
+
     users = User.query.all()
     followed_ids = [f.followed_id for f in Follow.query.filter_by(follower_id=user.id).all()]
     followed_users = [User.query.get(uid) for uid in followed_ids]
 
-    # Mood Journal Analytics
+    # Mood Journal Analytics (simple journal scores)
     last_week = datetime.utcnow().date() - timedelta(days=6)
-    journal_entries = MoodJournal.query.filter(MoodJournal.user_id==user.id, MoodJournal.date >= last_week).all()
+    journal_entries = MoodJournal.query.filter(MoodJournal.user_id==user.id, MoodJournal.date >= last_week).order_by(MoodJournal.date.asc()).all()
     journal_dates = [e.date.strftime("%a") for e in journal_entries]
     journal_scores = [e.sentiment_score for e in journal_entries]
+
+    # -------------------------------
+    # MoodEntry analytics: weekly averages, 30-day counts/averages, mood distribution
+    seven_days_ago = datetime.utcnow().date() - timedelta(days=6)
+    weekly_q = db.session.query(
+        func.date(MoodEntry.created_at).label('d'),
+        func.avg(MoodEntry.score).label('avg_score')
+    ).filter(
+        MoodEntry.user_id==user.id,
+        func.date(MoodEntry.created_at) >= seven_days_ago
+    ).group_by(func.date(MoodEntry.created_at)).order_by(func.date(MoodEntry.created_at).asc()).all()
+
+    weekly_labels = []
+    weekly_scores = []
+    for i in range(7):
+        d = seven_days_ago + timedelta(days=i)
+        weekly_labels.append(d.strftime('%a'))
+        matched = next((r.avg_score for r in weekly_q if str(r.d) == d.strftime('%Y-%m-%d')), None)
+        weekly_scores.append(round(matched,3) if matched is not None else None)
+
+    thirty_days_ago = datetime.utcnow().date() - timedelta(days=29)
+    monthly_q = db.session.query(
+        func.date(MoodEntry.created_at).label('d'),
+        func.count(MoodEntry.id).label('cnt'),
+        func.avg(MoodEntry.score).label('avg')
+    ).filter(
+        MoodEntry.user_id==user.id,
+        func.date(MoodEntry.created_at) >= thirty_days_ago
+    ).group_by(func.date(MoodEntry.created_at)).order_by(func.date(MoodEntry.created_at).asc()).all()
+
+    monthly_labels = []
+    monthly_counts = []
+    monthly_avgs = []
+    for i in range(30):
+        d = thirty_days_ago + timedelta(days=i)
+        monthly_labels.append(d.strftime('%b %d'))
+        matched = next((r for r in monthly_q if str(r.d) == d.strftime('%Y-%m-%d')), None)
+        if matched:
+            monthly_counts.append(matched.cnt)
+            monthly_avgs.append(round(matched.avg,3) if matched.avg is not None else 0)
+        else:
+            monthly_counts.append(0)
+            monthly_avgs.append(0)
+
+    dist_q = db.session.query(MoodEntry.mood, func.count(MoodEntry.id)).filter(
+        MoodEntry.user_id==user.id,
+        func.date(MoodEntry.created_at) >= thirty_days_ago
+    ).group_by(MoodEntry.mood).all()
+    dist_labels = [r[0] or 'unknown' for r in dist_q]
+    dist_counts = [r[1] for r in dist_q]
 
     return render_template(
         'dashboard.html',
         user=user, moods=recent_moods, events=upcoming_events,
         analytics=analytics, suggestions=suggestions,
         users=users, followed_users=followed_users,
-        journal_dates=journal_dates, journal_scores=journal_scores
+        journal_dates=journal_dates, journal_scores=journal_scores,
+        weekly_labels=weekly_labels, weekly_scores=weekly_scores,
+        monthly_labels=monthly_labels, monthly_counts=monthly_counts, monthly_avgs=monthly_avgs,
+        dist_labels=dist_labels, dist_counts=dist_counts
     )
 # ===============================
 # Mood Feed
@@ -456,6 +589,44 @@ def journal():
 
     today_entry = MoodJournal.query.filter_by(user_id=user.id, date=datetime.utcnow().date()).first()
     return render_template('journal.html', user=user, today_entry=today_entry)
+
+
+@app.route('/checkin', methods=['GET','POST'])
+def checkin():
+    user = current_user()
+    if not user:
+        return redirect(url_for('index'))
+    if request.method == 'POST':
+        mood = request.form.get('mood')
+        note = request.form.get('note')
+        # If user provided text note, analyze sentiment
+        score = None
+        if note:
+            _, score = analyze_mood(note)
+        entry = MoodEntry(user_id=user.id, mood=mood, note=note, score=score)
+        db.session.add(entry)
+        db.session.commit()
+        flash('Check-in saved','success')
+        return redirect(url_for('dashboard'))
+
+    # show last check-in for today if exists
+    today = datetime.utcnow().date()
+    last = MoodEntry.query.filter(MoodEntry.user_id==user.id, MoodEntry.created_at >= datetime.combine(today, datetime.min.time())).order_by(MoodEntry.created_at.desc()).first()
+    return render_template('checkin.html', user=user, last=last)
+
+
+@app.route('/coach')
+def coach():
+    user = current_user()
+    if not user:
+        return redirect(url_for('index'))
+    # recent 14 entries
+    recent_entries = MoodEntry.query.filter_by(user_id=user.id).order_by(MoodEntry.created_at.desc()).limit(14).all()
+    recs = ai_recommendations(user, recent_entries)
+    streak = compute_streak(user.id)
+    # last note
+    last_note = JournalNote.query.filter_by(user_id=user.id).order_by(JournalNote.created_at.desc()).first()
+    return render_template('coach.html', user=user, recs=recs, streak=streak, last_note=last_note)
 
 @app.route('/journal/analytics')
 def journal_analytics():
