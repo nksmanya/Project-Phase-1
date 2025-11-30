@@ -1,552 +1,72 @@
 {% extends "base.html" %}
+{% block title %}Sign In - FeelUP{% endblock %}
+
 {% block content %}
-<style>
-    /* Override default styles */
-    body {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        min-height: 100vh;
-        position: relative;
-        overflow-x: hidden;
-    }
+<div class="py-5">
+  <div class="card mx-auto" style="max-width:440px;">
+    <div class="card-body">
+      <div class="text-center mb-3">
+        <div class="brand-mark mb-2">🙂</div>
+        <h3 class="mb-1">Welcome back</h3>
+        <p class="text-muted small">Sign in to continue your journey</p>
+      </div>
 
-    /* Animated background elements */
-    .bg-animation {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        overflow: hidden;
-        z-index: 0;
-        pointer-events: none;
-    }
-
-    .floating-bubble {
-        position: absolute;
-        border-radius: 50%;
-        background: rgba(255, 255, 255, 0.1);
-        animation: float 20s infinite ease-in-out;
-    }
-
-    .bubble-1 {
-        width: 80px;
-        height: 80px;
-        left: 10%;
-        animation-delay: 0s;
-    }
-
-    .bubble-2 {
-        width: 120px;
-        height: 120px;
-        left: 70%;
-        animation-delay: 5s;
-    }
-
-    .bubble-3 {
-        width: 60px;
-        height: 60px;
-        left: 40%;
-        animation-delay: 2s;
-    }
-
-    .bubble-4 {
-        width: 100px;
-        height: 100px;
-        right: 10%;
-        animation-delay: 7s;
-    }
-
-    @keyframes float {
-        0%, 100% {
-            transform: translateY(100vh) rotate(0deg);
-            opacity: 0;
-        }
-        10% {
-            opacity: 0.4;
-        }
-        90% {
-            opacity: 0.4;
-        }
-        100% {
-            transform: translateY(-100vh) rotate(720deg);
-            opacity: 0;
-        }
-    }
-
-    .login-container {
-        background: rgba(255, 255, 255, 0.95);
-        backdrop-filter: blur(20px);
-        border-radius: 24px;
-        padding: 48px;
-        width: 100%;
-        max-width: 440px;
-        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-        position: relative;
-        z-index: 1;
-        animation: slideUp 0.6s ease-out;
-        margin: 20px;
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .logo-section {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .logo {
-        width: 80px;
-        height: 80px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border-radius: 20px;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        animation: pulse 2s infinite;
-    }
-
-    @keyframes pulse {
-        0% {
-            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4);
-        }
-        70% {
-            box-shadow: 0 0 0 20px rgba(102, 126, 234, 0);
-        }
-        100% {
-            box-shadow: 0 0 0 0 rgba(102, 126, 234, 0);
-        }
-    }
-
-    .logo-text {
-        color: white;
-        font-size: 28px;
-        font-weight: bold;
-        letter-spacing: -1px;
-    }
-
-    .login-title {
-        color: #1a1a2e;
-        font-size: 32px;
-        font-weight: 700;
-        margin-bottom: 8px;
-        text-align: center;
-    }
-
-    .subtitle {
-        color: #6c757d;
-        text-align: center;
-        margin-bottom: 32px;
-        font-size: 14px;
-    }
-
-    .form-group {
-        margin-bottom: 20px;
-        position: relative;
-    }
-
-    .form-label {
-        display: block;
-        margin-bottom: 8px;
-        color: #4a5568;
-        font-size: 14px;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
-
-    .input-wrapper {
-        position: relative;
-    }
-
-    .input-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: #9ca3af;
-        transition: color 0.3s ease;
-        width: 20px;
-        height: 20px;
-    }
-
-    .form-control {
-        width: 100%;
-        padding: 14px 16px 14px 44px !important;
-        border: 2px solid #e5e7eb !important;
-        border-radius: 12px !important;
-        font-size: 15px;
-        transition: all 0.3s ease;
-        background: #f9fafb !important;
-    }
-
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea !important;
-        background: white !important;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1) !important;
-    }
-
-    .form-control:focus ~ .input-icon {
-        color: #667eea;
-    }
-
-    .password-toggle {
-        position: absolute;
-        right: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        color: #9ca3af;
-        cursor: pointer;
-        padding: 4px;
-        transition: color 0.3s ease;
-        width: 24px;
-        height: 24px;
-    }
-
-    .password-toggle:hover {
-        color: #667eea;
-    }
-
-    .remember-forgot {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 24px;
-    }
-
-    .checkbox-wrapper {
-        display: flex;
-        align-items: center;
-    }
-
-    .checkbox-wrapper input[type="checkbox"] {
-        width: 18px;
-        height: 18px;
-        margin-right: 8px;
-        cursor: pointer;
-    }
-
-    .checkbox-wrapper label {
-        color: #4a5568;
-        font-size: 14px;
-        cursor: pointer;
-        margin-bottom: 0;
-    }
-
-    .forgot-link {
-        color: #667eea;
-        text-decoration: none;
-        font-size: 14px;
-        font-weight: 500;
-        transition: color 0.3s ease;
-    }
-
-    .forgot-link:hover {
-        color: #764ba2;
-        text-decoration: none;
-    }
-
-    .btn-login {
-        width: 100%;
-        padding: 14px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        border: none;
-        border-radius: 12px;
-        color: white;
-        font-size: 16px;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-    }
-
-    .btn-login:before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: -100%;
-        width: 100%;
-        height: 100%;
-        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-        transition: left 0.5s;
-    }
-
-    .btn-login:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
-        color: white;
-    }
-
-    .btn-login:hover:before {
-        left: 100%;
-    }
-
-    .divider {
-        text-align: center;
-        margin: 32px 0 24px;
-        position: relative;
-    }
-
-    .divider:before {
-        content: '';
-        position: absolute;
-        top: 50%;
-        left: 0;
-        right: 0;
-        height: 1px;
-        background: #e5e7eb;
-    }
-
-    .divider span {
-        background: rgba(255, 255, 255, 0.95);
-        padding: 0 16px;
-        color: #9ca3af;
-        font-size: 13px;
-        position: relative;
-    }
-
-    .social-login {
-        display: flex;
-        gap: 12px;
-        margin-bottom: 32px;
-    }
-
-    .social-btn {
-        flex: 1;
-        padding: 12px;
-        border: 2px solid #e5e7eb;
-        border-radius: 12px;
-        background: white;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        font-size: 14px;
-        color: #4a5568;
-        font-weight: 500;
-        text-decoration: none;
-    }
-
-    .social-btn:hover {
-        border-color: #667eea;
-        background: #f7f8ff;
-        transform: translateY(-2px);
-        text-decoration: none;
-        color: #4a5568;
-    }
-
-    .signup-link {
-        text-align: center;
-        color: #6c757d;
-        font-size: 14px;
-    }
-
-    .signup-link a {
-        color: #667eea;
-        text-decoration: none;
-        font-weight: 600;
-        transition: color 0.3s ease;
-    }
-
-    .signup-link a:hover {
-        color: #764ba2;
-        text-decoration: none;
-    }
-
-    /* Icons */
-    .icon {
-        width: 20px;
-        height: 20px;
-        fill: currentColor;
-    }
-
-    /* Loading animation */
-    .loading {
-        display: none;
-        width: 20px;
-        height: 20px;
-        border: 3px solid rgba(255, 255, 255, 0.3);
-        border-radius: 50%;
-        border-top-color: white;
-        animation: spin 1s ease-in-out infinite;
-        margin: 0 auto;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .btn-login.loading-state .btn-text {
-        display: none;
-    }
-
-    .btn-login.loading-state .loading {
-        display: inline-block;
-    }
-
-    /* Responsive design */
-    @media (max-width: 480px) {
-        .login-container {
-            padding: 32px 24px;
-        }
-
-        .login-title {
-            font-size: 28px;
-        }
-    }
-</style>
-
-<!-- Animated Background -->
-<div class="bg-animation">
-    <div class="floating-bubble bubble-1"></div>
-    <div class="floating-bubble bubble-2"></div>
-    <div class="floating-bubble bubble-3"></div>
-    <div class="floating-bubble bubble-4"></div>
-</div>
-
-<!-- Login Container -->
-<div class="container mt-4 d-flex justify-content-center">
-    <div class="login-container">
-        <!-- Logo Section -->
-        <div class="logo-section">
-            <div class="logo">
-                <span class="logo-text">FU</span>
-            </div>
+      <form id="loginForm" method="POST" action="{{ url_for('login') }}">
+        <div class="mb-3 form-group">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required>
         </div>
 
-        <h2 class="login-title">Welcome Back</h2>
-        <p class="subtitle">Sign in to continue to Feel Up</p>
-
-        <!-- Login Form -->
-        <form method="POST" action="{{ url_for('login') }}" id="loginForm">
-            <!-- Email Field -->
-            <div class="form-group">
-                <label class="form-label" for="email">Email Address</label>
-                <div class="input-wrapper">
-                    <input type="email" 
-                           class="form-control" 
-                           id="email" 
-                           name="email" 
-                           placeholder="Enter your email" 
-                           required>
-                    <svg class="input-icon icon" viewBox="0 0 24 24">
-                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
-                    </svg>
-                </div>
-            </div>
-
-            <!-- Password Field -->
-            <div class="form-group">
-                <label class="form-label" for="password">Password</label>
-                <div class="input-wrapper">
-                    <input type="password" 
-                           class="form-control" 
-                           id="password" 
-                           name="password" 
-                           placeholder="Enter your password" 
-                           required>
-                    <svg class="input-icon icon" viewBox="0 0 24 24">
-                        <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
-                    </svg>
-                    <button type="button" class="password-toggle" onclick="togglePassword()">
-                        <svg class="icon" id="eyeIcon" viewBox="0 0 24 24">
-                            <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Remember Me & Forgot Password -->
-            <div class="remember-forgot">
-                <div class="checkbox-wrapper">
-                    <input type="checkbox" id="remember" name="remember">
-                    <label for="remember">Remember me</label>
-                </div>
-                <a href="#" class="forgot-link">Forgot Password?</a>
-            </div>
-
-            <!-- Submit Button -->
-            <button type="submit" class="btn btn-login">
-                <span class="btn-text">Sign In</span>
-                <div class="loading"></div>
+        <div class="mb-3 form-group">
+          <label class="form-label">Password</label>
+          <div class="input-group">
+            <input id="password" type="password" name="password" class="form-control" required>
+            <button type="button" class="btn btn-outline-secondary" onclick="togglePassword()">
+              <span id="eyeIcon">👁️</span>
             </button>
-        </form>
-
-        <!-- Divider -->
-        <div class="divider">
-            <span>OR</span>
+          </div>
         </div>
 
-        <!-- Social Login -->
-        <div class="social-login">
-            <a href="#" class="social-btn">
-                <svg class="icon" viewBox="0 0 24 24">
-                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Google
-            </a>
-            <a href="#" class="social-btn">
-                <svg class="icon" viewBox="0 0 24 24">
-                    <path d="M12 2.03998C6.5 2.03998 2 6.52998 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.84998C10.44 7.33998 11.93 5.95998 14.22 5.95998C15.31 5.95998 16.45 6.14998 16.45 6.14998V8.61998H15.19C13.95 8.61998 13.56 9.38998 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96C15.9164 21.5878 18.0622 20.3855 19.6099 18.57C21.1576 16.7546 22.0054 14.4456 22 12.06C22 6.52998 17.5 2.03998 12 2.03998Z"/>
-                </svg>
-                Facebook
-            </a>
+        <div class="d-flex align-items-center justify-content-between mb-3">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" id="remember" name="remember">
+            <label class="form-check-label small" for="remember">Remember me</label>
+          </div>
+          <a href="#" class="small">Forgot?</a>
         </div>
 
-        <!-- Sign Up Link -->
-        <p class="signup-link">
-            Don't have an account? <a href="#">Sign up now</a>
-        </p>
+        <button class="btn btn-primary w-100 mb-3 btn-login" type="submit">Sign in</button>
+
+        <div class="text-center small text-muted mb-2">or continue with</div>
+        <div class="d-flex gap-2">
+          <a class="btn btn-outline-secondary flex-fill" href="#"><i class="fab fa-google"></i> Google</a>
+          <a class="btn btn-outline-secondary flex-fill" href="#"><i class="fab fa-apple"></i> Apple</a>
+        </div>
+
+        <div class="text-center mt-3 small">Don't have an account? <a href="{{ url_for('register') }}">Sign up</a></div>
+      </form>
     </div>
+  </div>
 </div>
 
 <script>
-    function togglePassword() {
-        const passwordInput = document.getElementById('password');
-        const eyeIcon = document.getElementById('eyeIcon');
-        
-        if (passwordInput.type === 'password') {
-            passwordInput.type = 'text';
-            eyeIcon.innerHTML = '<path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z"/>';
-        } else {
-            passwordInput.type = 'password';
-            eyeIcon.innerHTML = '<path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>';
-        }
-    }
+function togglePassword() {
+  const passwordInput = document.getElementById('password');
+  const eyeIcon = document.getElementById('eyeIcon');
+  if (passwordInput.type === 'password') {
+    passwordInput.type = 'text';
+    eyeIcon.textContent = '🙈';
+  } else {
+    passwordInput.type = 'password';
+    eyeIcon.textContent = '👁️';
+  }
+}
 
-    // Form submission animation
-    document.getElementById('loginForm').addEventListener('submit', function(e) {
-        const btn = document.querySelector('.btn-login');
-        btn.classList.add('loading-state');
-    });
-
-    // Add input animation
-    const inputs = document.querySelectorAll('input[type="email"], input[type="password"]');
-    inputs.forEach(input => {
-        input.addEventListener('focus', function() {
-            this.closest('.form-group').querySelector('.form-label').style.color = '#667eea';
-        });
-        
-        input.addEventListener('blur', function() {
-            this.closest('.form-group').querySelector('.form-label').style.color = '#4a5568';
-        });
-    });
+// Simple submit visual feedback
+document.getElementById('loginForm').addEventListener('submit', function(e) {
+  const btn = document.querySelector('.btn-login');
+  if (btn) btn.classList.add('disabled');
+});
 </script>
+
 {% endblock %}
