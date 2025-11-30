@@ -1,7 +1,9 @@
 <nav class="navbar navbar-expand-md bg-transparent py-2" aria-label="Main Navigation">
   <div class="container-fluid align-items-center">
     <a class="navbar-brand d-flex align-items-center gap-2" href="{{ url_for('dashboard') }}">
-      <div class="brand-mark d-flex align-items-center justify-content-center">🙂</div>
+      <div class="brand-mark d-flex align-items-center justify-content-center">
+        <img src="{{ url_for('static', filename='favicon.png') }}" alt="FeelUP" style="width:34px;height:34px;object-fit:cover;border-radius:6px;" />
+      </div>
       <span class="brand-text">FeelUP</span>
     </a>
 
@@ -18,6 +20,9 @@
       <ul class="navbar-nav ms-auto d-flex align-items-center">
         <li class="nav-item me-2">
           <a class="btn btn-sm btn-outline-light" href="{{ url_for('mood_feed') }}" aria-label="Mood Feed"><i class="fas fa-heart"></i></a>
+        </li>
+        <li class="nav-item me-2">
+          <a class="btn btn-sm btn-outline-light" href="{{ url_for('journal') }}" aria-label="Journal"><i class="fas fa-book-open"></i></a>
         </li>
         <li class="nav-item me-2">
           <a class="btn btn-sm btn-outline-light" href="{{ url_for('events') }}" aria-label="Events"><i class="fas fa-calendar-alt"></i></a>

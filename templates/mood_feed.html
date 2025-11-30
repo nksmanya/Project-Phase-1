@@ -47,50 +47,60 @@
         <div class="d-flex justify-content-between align-items-center mb-3">
           <div>
             <strong><i class="fas fa-user-circle"></i> {{ mood.username }}</strong>
-            {% if mood.anonymous %}
-              <span class="badge badge-warning ms-2"><i class="fas fa-user-secret"></i> Anonymous</span>
-            {% endif %}
-          </div>
-          <small class="text-muted"><i class="far fa-clock"></i> {{ mood.created_at.strftime('%b %d, %H:%M') }}</small>
-        </div>
-        
-        <p style="font-size: 1.05rem; line-height: 1.6;">{{ mood.content }}</p>
-        
-        <div class="mb-3">
-          {% if mood.emotion == 'positive' %}
-            <span class="emotion-badge emotion-positive"><i class="fas fa-smile-beam"></i> {{ mood.emotion }}</span>
-          {% elif mood.emotion == 'negative' %}
-            <span class="emotion-badge emotion-negative"><i class="fas fa-sad-tear"></i> {{ mood.emotion }}</span>
-          {% else %}
-            <span class="emotion-badge emotion-neutral"><i class="fas fa-meh"></i> {{ mood.emotion }}</span>
-          {% endif %}
-        </div>
-        
-        <div class="d-flex justify-content-between align-items-center mb-3">
-          <div class="d-flex gap-2">
-            <form method="POST" action="{{ url_for('react_to_mood', post_id=mood.id, emoji='👍') }}" style="display:inline;">
-              <button class="btn btn-sm btn-outline-primary reaction-btn" type="submit">
-                👍 <span class="count">{{ mood.reactions.get('👍',0) }}</span>
-              </button>
-            </form>
-            <form method="POST" action="{{ url_for('react_to_mood', post_id=mood.id, emoji='❤️') }}" style="display:inline;">
-              <button class="btn btn-sm btn-outline-danger reaction-btn" type="submit">
-                ❤️ <span class="count">{{ mood.reactions.get('❤️',0) }}</span>
-              </button>
-            </form>
-            <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="collapse" data-bs-target="#comments-{{ mood.id }}">
-              <i class="fas fa-comment"></i> {{ mood.comments|length }}
-            </button>
-          </div>
-          <div>
-            {% if user and mood.user_id == user.id %}
-            <a href="{{ url_for('edit_mood', post_id=mood.id) }}" class="btn btn-sm btn-warning">
-              <i class="fas fa-edit"></i>
-            </a>
-            <a href="{{ url_for('delete_mood', post_id=mood.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Delete this mood?')">
-              <i class="fas fa-trash"></i>
-            </a>
-            {% endif %}
+            {% block content %}
+            <div class="container py-4">
+              <div class="row">
+                <div class="col-lg-8">
+                  <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h3 class="mb-0">Mood Feed</h3>
+                    <small class="text-muted">Share and reflect with the community</small>
+                  </div>
+
+                  {% if moods %}
+                  <div class="list-group">
+                    {% for mood in moods %}
+                    <div class="list-group-item mb-2">
+                      <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                          <div class="fw-bold">{{ mood.user.username }}</div>
+                          <div class="text-muted small">{{ mood.created_at.strftime('%b %d, %Y %H:%M') }}</div>
+                        </div>
+                        <div>
+                          <span class="badge bg-primary">{{ mood.emotion }}</span>
+                        </div>
+                      </div>
+                      <p class="mt-2 mb-0">{{ mood.content }}</p>
+                    </div>
+                    {% endfor %}
+                  </div>
+                  {% else %}
+                  <p class="text-muted">No moods shared yet.</p>
+                  {% endif %}
+
+                </div>
+                <div class="col-lg-4">
+                  <div class="card">
+                    <div class="card-body">
+                      <h5 class="card-title">Filters</h5>
+                      <form method="GET">
+                        <div class="mb-3">
+                          <label class="form-label">Emotion</label>
+                          <select name="emotion" class="form-select">
+                            <option value="">All</option>
+                            <option value="positive">Positive</option>
+                            <option value="neutral">Neutral</option>
+                            <option value="negative">Negative</option>
+                          </select>
+                        </div>
+                        <button class="btn btn-primary">Apply</button>
+                      </form>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {% endblock %}
           </div>
         </div>
 

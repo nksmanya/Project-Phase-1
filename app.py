@@ -618,10 +618,25 @@ def journal():
         db.session.add(entry)
         db.session.commit()
         flash('Mood journal entry saved!', 'success')
-        return redirect(url_for('journal_analytics'))
+        return redirect(url_for('journal'))
 
     today_entry = MoodJournal.query.filter_by(user_id=user.id, date=datetime.utcnow().date()).first()
-    return render_template('journal.html', user=user, today_entry=today_entry)
+    # load recent entries for listing
+    # pagination for previous entries
+    try:
+        page = int(request.args.get('page', 1))
+        if page < 1:
+            page = 1
+    except Exception:
+        page = 1
+    page_size = 10
+    base_q = MoodJournal.query.filter_by(user_id=user.id)
+    total = base_q.count()
+    total_pages = max(1, (total + page_size - 1) // page_size)
+    if page > total_pages:
+        page = total_pages
+    entries = base_q.order_by(MoodJournal.date.desc(), MoodJournal.created_at.desc()).offset((page-1)*page_size).limit(page_size).all()
+    return render_template('journal.html', user=user, today_entry=today_entry, entries=entries, page=page, total_pages=total_pages)
 
 
 @app.route('/checkin', methods=['GET','POST'])

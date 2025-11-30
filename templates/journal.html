@@ -2,85 +2,116 @@
 {% block title %}Mood Journal - FeelUP{% endblock %}
 
 {% block content %}
-<div class="container mt-4">
-  <div class="text-center mb-5">
-    <h2><i class="fas fa-pen-fancy gradient-text"></i> Mood Journal</h2>
+<div class="container py-4">
+  <div class="text-center mb-4">
+    <h2><i class="fas fa-pen-fancy"></i> Mood Journal</h2>
     <p class="text-muted">Track your emotional journey with AI-powered sentiment analysis</p>
   </div>
-  
+
   {% if today_entry %}
   <div class="alert alert-info mb-4">
     <div class="d-flex align-items-center">
-      <i class="fas fa-check-circle" style="font-size: 2rem; margin-right: 15px;"></i>
+      <i class="fas fa-check-circle fa-2x me-3"></i>
       <div>
-        <strong>Today's Entry Saved!</strong><br>
-        <em>"{{ today_entry.text[:100] }}{% if today_entry.text|length > 100 %}...{% endif %}"</em>
-        <span class="emotion-badge emotion-{{ today_entry.emotion }} ms-2">{{ today_entry.emotion }}</span>
+        <strong>Today's Entry Saved!</strong>
+        <div class="small text-muted">"{{ today_entry.text[:120] }}{% if today_entry.text|length > 120 %}...{% endif %}"</div>
+        <div class="mt-1"><span class="badge bg-secondary">{{ today_entry.emotion }}</span></div>
       </div>
     </div>
   </div>
   {% endif %}
 
-  <div class="card p-4 shadow-hover" style="border-left: 5px solid #667eea;">
-    <h5 class="mb-4"><i class="fas fa-edit"></i> How are you feeling today?</h5>
-    <form method="POST">
-      <div class="mb-4">
-        <label class="form-label"><i class="fas fa-heart"></i> Your Thoughts</label>
-        <textarea name="text" class="form-control" rows="6" 
-          placeholder="Express yourself freely... The AI will analyze your sentiment and help track your emotional patterns over time. 💭" 
-          required></textarea>
-        <small class="text-muted mt-1 d-block">
-          <i class="fas fa-robot"></i> Our AI will automatically detect your mood sentiment
-        </small>
-      </div>
-      
-      <div class="mb-4">
-        <label class="form-label"><i class="fas fa-smile"></i> Manual Emotion (Optional)</label>
-        <select name="emotion" class="form-select">
-          <option value="">🤖 Let AI Detect</option>
-          <option value="positive">😊 Positive</option>
-          <option value="neutral">😐 Neutral</option>
-          <option value="negative">😔 Negative</option>
-        </select>
-      </div>
-      
-      <div class="d-flex gap-3 align-items-center">
-        <button type="submit" class="btn btn-success">
-          <i class="fas fa-save"></i> Save Entry
-        </button>
-        <a href="{{ url_for('journal_analytics') }}" class="btn btn-outline-primary">
-          <i class="fas fa-chart-line"></i> View Analytics
-        </a>
-        <small class="text-muted ms-auto">
-          <i class="fas fa-lock"></i> Your journal is private
-        </small>
-      </div>
-    </form>
-  </div>
+  <div class="card mb-4">
+    <div class="card-body">
+      <h5 class="card-title mb-3">How are you feeling today?</h5>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Your Thoughts</label>
+          <textarea name="text" class="form-control" rows="6" placeholder="Express yourself..." required></textarea>
+          <div class="form-text"><i class="fas fa-robot"></i> AI will analyze your sentiment automatically.</div>
+        </div>
 
-  <!-- Tips Section -->
-  <div class="row mt-5">
+        <div class="mb-3">
+          <label class="form-label">Manual Emotion (optional)</label>
+          <select name="emotion" class="form-select">
+            <option value="">Let AI detect</option>
+            <option value="positive">😊 Positive</option>
+            <option value="neutral">😐 Neutral</option>
+            <option value="negative">😔 Negative</option>
+          </select>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center">
+          <a href="{{ url_for('journal_analytics') }}" class="btn btn-outline-primary">View Analytics</a>
+          <button type="submit" class="btn btn-primary">Save Entry</button>
+        </div>
+      </form>
+    </div>
+  </div>
+        <!-- Helpful tips -->
+  <div class="row">
     <div class="col-md-4 mb-3">
-      <div class="card p-3 text-center shadow-hover" style="border-top: 4px solid #10b981;">
-        <i class="fas fa-lightbulb" style="font-size: 2.5rem; color: #10b981; margin-bottom: 10px;"></i>
-        <h5>Be Honest</h5>
-        <p class="text-muted small">Express your true feelings without judgment</p>
+      <div class="card text-center p-3">
+        <i class="fas fa-lightbulb fa-2x mb-2 text-success"></i>
+        <h6>Be Honest</h6>
+        <p class="small text-muted">Express your true feelings without judgment.</p>
       </div>
     </div>
     <div class="col-md-4 mb-3">
-      <div class="card p-3 text-center shadow-hover" style="border-top: 4px solid #667eea;">
-        <i class="fas fa-calendar-check" style="font-size: 2.5rem; color: #667eea; margin-bottom: 10px;"></i>
-        <h5>Daily Habit</h5>
-        <p class="text-muted small">Journal regularly to track your patterns</p>
+      <div class="card text-center p-3">
+        <i class="fas fa-calendar-check fa-2x mb-2 text-primary"></i>
+        <h6>Daily Habit</h6>
+        <p class="small text-muted">Journal regularly to notice patterns over time.</p>
       </div>
     </div>
     <div class="col-md-4 mb-3">
-      <div class="card p-3 text-center shadow-hover" style="border-top: 4px solid #f59e0b;">
-        <i class="fas fa-chart-line" style="font-size: 2.5rem; color: #f59e0b; margin-bottom: 10px;"></i>
-        <h5>Track Progress</h5>
-        <p class="text-muted small">Review your analytics to see improvements</p>
+      <div class="card text-center p-3">
+        <i class="fas fa-chart-line fa-2x mb-2 text-warning"></i>
+        <h6>Track Progress</h6>
+        <p class="small text-muted">Review analytics to see how sentiment shifts.</p>
       </div>
     </div>
+  </div>
+  
+  <!-- All entries -->
+  <div class="mt-4">
+    <h5 class="mb-3">Your Recent Journal Entries</h5>
+    {% if entries and entries|length > 0 %}
+    <div class="list-group">
+      {% for e in entries %}
+      <div class="list-group-item">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <div class="fw-semibold">{{ e.date.strftime('%b %d, %Y') }} <small class="text-muted">{{ e.created_at.strftime('%H:%M') }}</small></div>
+            <div class="small text-muted">Score: {{ '%.3f'|format(e.sentiment_score or 0) }} · <span class="badge bg-secondary">{{ e.emotion }}</span></div>
+          </div>
+          <div class="text-end">
+            <a href="#" class="btn btn-sm btn-outline-secondary">View</a>
+          </div>
+        </div>
+        <p class="mt-2 mb-0">{{ e.text|truncate(300) }}</p>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted">You have no journal entries yet.</p>
+    {% endif %}
+
+    <!-- Pagination controls -->
+    {% if total_pages and total_pages > 1 %}
+    <nav aria-label="Journal pagination" class="mt-3">
+      <ul class="pagination">
+        <li class="page-item {% if page <= 1 %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('journal', page=page-1) }}" aria-label="Previous">&laquo; Previous</a>
+        </li>
+        <li class="page-item disabled"><span class="page-link">Page {{ page }} of {{ total_pages }}</span></li>
+        <li class="page-item {% if page >= total_pages %}disabled{% endif %}">
+          <a class="page-link" href="{{ url_for('journal', page=page+1) }}" aria-label="Next">Next &raquo;</a>
+        </li>
+      </ul>
+    </nav>
+    {% endif %}
   </div>
 </div>
+
 {% endblock %}
