@@ -9,23 +9,25 @@
 
 body {
   font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  background-attachment: fixed;
+  background: linear-gradient(180deg, #f7fafc 0%, #eef2ff 100%);
   margin: 0;
   padding: 0;
-  color: #1f2937;
+  color: #0f172a;
   min-height: 100vh;
 }
 
-main.container {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 30px;
-  margin-top: 30px;
-  margin-bottom: 30px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
-  animation: fadeInUp 0.5s ease-out;
+main.container.main-container {
+  max-width: 1100px;
+  margin: 28px auto;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 22px;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+  animation: fadeInUp 0.42s ease-out;
+}
+
+.content-wrap {
+  padding: 6px 10px 24px 10px;
 }
 
 @keyframes fadeInUp {
@@ -92,30 +94,83 @@ h3 {
    Navbar Modern Style
 ================================= */
 .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 40px;
-  background: linear-gradient(135deg, #1f2937 0%, #111827 100%);
-  color: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-  border-bottom: 3px solid #667eea;
+  --bs-bg: transparent;
+  padding: 12px 20px;
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,0.6);
+  border-bottom: 1px solid rgba(15,23,42,0.06);
 }
 
-.nav-left .brand {
-  font-size: 2rem;
-  font-weight: 800;
-  color: white;
-  text-decoration: none;
-  background: linear-gradient(135deg, #667eea, #764ba2);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  transition: all 0.3s ease;
-  letter-spacing: 1px;
+.navbar .brand-text {
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: 0.2px;
+}
+
+.brand-mark {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: linear-gradient(135deg,#eef2ff,#e0e7ff);
+  color: #111827;
+  font-size: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Stronger navbar color rules to override Bootstrap defaults and ensure visibility */
+.navbar {
+  background: rgba(255,255,255,0.88);
+  color: #0f172a;
+}
+.navbar .brand-text { color: #0f172a; }
+.navbar .nav-link, .navbar .nav-item .nav-link, .navbar .navbar-nav .nav-link {
+  color: #0f172a !important;
+  opacity: 0.95;
+}
+.navbar .nav-link:hover, .navbar .nav-item .nav-link:hover { color: #081025 !important; opacity: 1; }
+
+.navbar .btn-outline-light {
+  color: #0f172a;
+  border-color: rgba(15,23,42,0.06);
+  background: transparent;
+}
+.navbar .btn-outline-light:hover {
+  background: rgba(15,23,42,0.02);
+  color: #081025;
+}
+
+/* Toggler visibility on light navbar */
+.navbar-toggler {
+  border-color: rgba(15,23,42,0.06);
+}
+.navbar-toggler-icon {
+  background-image: none !important;
+  width: 28px;
+  height: 18px;
+  position: relative;
+}
+.navbar-toggler-icon::before, .navbar-toggler-icon::after, .navbar-toggler-icon span {
+  content: '';
+  display: block;
+  height: 2px;
+  background: #0f172a;
+  border-radius: 2px;
+  margin: 4px 0;
+}
+
+/* Small avatar for navbar */
+.avatar-sm {
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: #eef2ff;
+  color: #0f172a;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
 }
 
 .nav-left .brand:hover {
@@ -171,127 +226,54 @@ h3 {
 .profile-dropdown {
   cursor: pointer;
   position: relative;
-  padding: 8px 16px;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  padding: 6px 12px;
+  border-radius: 8px;
+  transition: all 0.18s ease;
 }
 
 .profile-dropdown:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(15,23,42,0.02);
 }
 
 .profile-name {
-  color: #e5e7eb;
+  color: #0f172a;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.profile-name::after {
-  content: "▼";
-  font-size: 0.7em;
-  transition: transform 0.3s ease;
-}
-
-.profile-dropdown:hover .profile-name::after {
-  transform: rotate(180deg);
-}
-
 .dropdown-menu {
-  display: none;
-  position: absolute;
-  right: 0;
-  top: calc(100% + 10px);
-  background: white;
-  color: #111827;
-  border-radius: 16px;
-  min-width: 200px;
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.25);
-  overflow: hidden;
-  z-index: 2000;
-  animation: dropdownSlide 0.3s ease-out;
-}
-
-@keyframes dropdownSlide {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  min-width: 180px;
 }
 
 .dropdown-menu a {
-  display: block;
-  padding: 14px 20px;
-  text-decoration: none;
-  color: #111827;
-  transition: all 0.2s ease;
-  font-weight: 500;
-  border-left: 3px solid transparent;
-}
-
-.dropdown-menu a:hover {
-  background: linear-gradient(90deg, #f3f4f6 0%, #e5e7eb 100%);
-  padding-left: 25px;
-  border-left: 3px solid #667eea;
-}
-
-.profile-dropdown:hover .dropdown-menu {
-  display: block;
+  padding: 10px 14px;
 }
 
 .nav-right .logout {
   color: #ef4444 !important;
 }
 
-.nav-right .logout:hover {
-  background: rgba(239, 68, 68, 0.1) !important;
-  border-left-color: #ef4444 !important;
-}
-
 /* ===============================
    Buttons & Cards
 ================================= */
 .btn {
-  border-radius: 12px !important;
-  padding: 10px 24px !important;
+  border-radius: 10px !important;
+  padding: 8px 18px !important;
   font-weight: 600 !important;
-  transition: all 0.3s ease !important;
+  transition: all 0.15s ease !important;
   border: none !important;
-  position: relative;
-  overflow: hidden;
-}
-
-.btn::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 0;
-  height: 0;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.3);
-  transform: translate(-50%, -50%);
-  transition: width 0.6s, height 0.6s;
-}
-
-.btn:hover::before {
-  width: 300px;
-  height: 300px;
 }
 
 .btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(15,23,42,0.06);
 }
 
 .btn:active {
-  transform: translateY(-1px);
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+  transform: translateY(0);
+  box-shadow: 0 4px 10px rgba(15,23,42,0.04);
 }
 
 .btn-primary {
@@ -311,11 +293,11 @@ h3 {
 }
 
 .card {
-  border-radius: 20px;
+  border-radius: 12px;
   border: none;
-  background: white;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  transition: all 0.4s ease;
+  background: #ffffff;
+  box-shadow: 0 6px 18px rgba(15,23,42,0.06);
+  transition: all 0.2s ease;
   overflow: hidden;
   position: relative;
 }
@@ -326,10 +308,10 @@ h3 {
   top: 0;
   left: 0;
   width: 100%;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  height: 3px;
+  background: linear-gradient(90deg, #eef2ff, #e0e7ff);
   transform: scaleX(0);
-  transition: transform 0.4s ease;
+  transition: transform 0.25s ease;
 }
 
 .card:hover::before {
@@ -337,8 +319,8 @@ h3 {
 }
 
 .card:hover {
-  box-shadow: 0 20px 50px rgba(102, 126, 234, 0.3);
-  transform: translateY(-8px);
+  box-shadow: 0 12px 30px rgba(15,23,42,0.08);
+  transform: translateY(-6px);
 }
 
 .card-body {
@@ -373,24 +355,49 @@ h3 {
 
 .reaction-btn {
   margin-right: 8px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  border: 2px solid #e5e7eb;
-  background: white;
-  transition: all 0.3s ease;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(15,23,42,0.06);
+  background: #ffffff;
+  transition: all 0.12s ease;
   cursor: pointer;
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .reaction-btn:hover {
-  transform: scale(1.15);
-  border-color: #667eea;
-  background: #f3f4f6;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  transform: scale(1.05);
+  border-color: rgba(15,23,42,0.12);
+  background: #f8fafc;
+  box-shadow: 0 4px 8px rgba(15,23,42,0.04);
 }
 
 .reaction-animate {
   animation: reactionPop 0.4s ease;
+}
+
+/* Avatar and small utilities */
+.avatar-sm {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: linear-gradient(135deg,#eef2ff,#e0e7ff);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.footer-minimal {
+  background: transparent;
+  color: rgba(15,23,42,0.6);
+}
+
+/* Utility: subtle card premium */
+.card-premium {
+  border-radius: 12px;
+  background: linear-gradient(white, white) padding-box, linear-gradient(135deg, #eef2ff, #e0e7ff) border-box;
+  border: 1px solid transparent;
 }
 
 @keyframes reactionPop {

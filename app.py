@@ -9,6 +9,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 import os
 from datetime import datetime
 from sqlalchemy import func
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user as flask_current_user, UserMixin
 
 # NLP for AI Mood Journal
 from nltk.sentiment import SentimentIntensityAnalyzer
@@ -24,12 +25,16 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY') or os.urandom(24)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
+# Flask-Login setup
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'index'
 
 # ===============================
 # Models
 # ===============================
 
-class User(db.Model):
+class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
     email = db.Column(db.String(150), unique=True, nullable=False)
@@ -143,10 +148,24 @@ class JournalNote(db.Model):
 with app.app_context():
     db.create_all()
 
+
+@login_manager.user_loader
+def load_user(user_id):
+    try:
+        return User.query.get(int(user_id))
+    except Exception:
+        return None
+
 # ===============================
 # Helper Functions
 # ===============================
 def current_user():
+    # Prefer Flask-Login's current_user when available
+    try:
+        if flask_current_user and flask_current_user.is_authenticated:
+            return flask_current_user
+    except Exception:
+        pass
     uid = session.get('user_id')
     if uid:
         return User.query.get(uid)
@@ -261,8 +280,11 @@ def register():
         user = User(name=name, email=email, password_hash=generate_password_hash(password))
         db.session.add(user)
         db.session.commit()
-        flash('Registration successful, please login','success')
-        return redirect(url_for('index'))
+        # Log the user in immediately after registration for a smoother flow
+        login_user(user)
+        session['user_id'] = user.id
+        flash('Registration successful — welcome!','success')
+        return redirect(url_for('dashboard'))
     return render_template('register.html')
 
 @app.route('/login', methods=['POST'])
@@ -273,18 +295,25 @@ def login():
     if not user or not user.check_password(password):
         flash('Invalid credentials','danger')
         return redirect(url_for('index'))
+    # Use Flask-Login to manage the session
+    login_user(user)
     session['user_id'] = user.id
     flash('Welcome, '+(user.name or user.email),'success')
     return redirect(url_for('dashboard'))
 
 @app.route('/logout')
 def logout():
+    try:
+        logout_user()
+    except Exception:
+        pass
     session.clear()
     flash('Logged out','info')
     return redirect(url_for('index'))
 
 # ----- Dashboard with Mood Analytics -----
 @app.route('/dashboard')
+@login_required
 def dashboard():
     user = current_user()
     if not user:
@@ -376,6 +405,7 @@ def dashboard():
 # Mood Feed
 # ===============================
 @app.route('/mood', methods=['GET','POST'])
+@login_required
 def mood_feed():
     user = current_user()
     if request.method=='POST':
@@ -420,6 +450,7 @@ def comment_post(post_id):
 # Memory
 # ===============================
 @app.route('/memory', methods=['GET','POST'])
+@login_required
 def memory():
     user = current_user()
     if request.method=='POST':
@@ -445,16 +476,15 @@ def memory():
 # Events
 # ===============================
 @app.route('/events')
+@login_required
 def events():
     user = current_user()
-    if not user:
-        return redirect(url_for('index'))
-    
     # Show events ordered by upcoming datetime
     events = Event.query.order_by(Event.datetime_event.asc()).all()
     return render_template('events.html', user=user, events=events)
 
 @app.route('/events/create', methods=['GET','POST'])
+@login_required
 def create_event():
     user = current_user()
     if request.method=='POST':
@@ -472,6 +502,7 @@ def create_event():
         return redirect(url_for('events'))
     return render_template('event_create.html', user=user)
 @app.route('/events/<int:event_id>/join', methods=['POST'])
+@login_required
 def join_event(event_id):
     user = current_user()
     event = Event.query.get_or_404(event_id)
@@ -493,6 +524,7 @@ def join_event(event_id):
 # Follow System
 # ===============================
 @app.route('/follow/<int:user_id>', methods=['POST'])
+@login_required
 def follow_user(user_id):
     user = current_user()
     if not user or user.id==user_id:
@@ -504,6 +536,7 @@ def follow_user(user_id):
     return redirect(request.referrer or url_for('dashboard'))
 
 @app.route('/unfollow/<int:user_id>', methods=['POST'])
+@login_required
 def unfollow_user(user_id):
     user = current_user()
     if not user:

@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="FeelUP - Share your emotions, connect with others, and track your mood journey">
   <meta name="theme-color" content="#667eea">
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='favicon.png') }}">
+  <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.png') }}">
   <title>{% block title %}FeelUP - Share Your Feelings{% endblock %}</title>
   
   <!-- Google Fonts -->
@@ -51,12 +54,14 @@
     {% endwith %}
   </div>
 
-  <main class="container">
-    {% block content %}{% endblock %}
+  <main class="container main-container px-0">
+    <div class="content-wrap px-3 px-md-4">
+      {% block content %}{% endblock %}
+    </div>
   </main>
 
   <!-- Footer -->
-  <footer class="text-center py-4 mt-5" style="color: rgba(255,255,255,0.8);">
+  <footer class="text-center py-4 mt-5 footer-minimal">
     <div class="container">
       <p class="mb-0">&copy; 2025 FeelUP. Made with <i class="fas fa-heart" style="color: #ef4444;"></i> for mental wellness</p>
     </div>
